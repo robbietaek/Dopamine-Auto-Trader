@@ -1,0 +1,10 @@
+server:
+  port: 8888
+
+logging:
+  level:
+    org:
+      springframework:
+        boot:
+          # 오류만 출력
+          autoconfigure: ERROR
