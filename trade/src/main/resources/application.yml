@@ -8,3 +8,7 @@ logging:
         boot:
           # 오류만 출력
           autoconfigure: ERROR
+
+bithumb:
+  apiKey:
+  apiSecret:

@@ -1,10 +1,12 @@
-package com.dopamine.trade.auto.model.AskPrice;
+package com.dopamine.trade.auto.model.ask_price;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serial;
 import java.io.Serializable;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties
 public class Asks implements Serializable {
 
   @Serial

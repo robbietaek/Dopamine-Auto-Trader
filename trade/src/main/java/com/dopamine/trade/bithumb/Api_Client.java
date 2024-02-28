@@ -1,6 +1,5 @@
 package com.dopamine.trade.bithumb;
 
-import com.dopamine.trade.auto.model.Account.Account;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -175,7 +174,7 @@ public class Api_Client {
   }
 
   @SuppressWarnings("unchecked")
-  public Account callApi(String endpoint, HashMap<String, String> params) {
+  public Object callBithumbApi(String endpoint, HashMap<String, String> params, Class clazz) {
     String rgResultDecode = "";
     HashMap<String, String> rgParams = new HashMap<String, String>();
     rgParams.put("endpoint", endpoint);
@@ -188,11 +187,11 @@ public class Api_Client {
     HashMap<String, String> httpHeaders = getHttpHeaders(endpoint, rgParams, api_key, api_secret);
 
     rgResultDecode = request(api_host, "POST", rgParams, httpHeaders);
-    Account result = new Account();
+    Object result = new Object();
     if (!rgResultDecode.startsWith("error")) {
       // json 파싱
       try {
-        result = new ObjectMapper().readValue(rgResultDecode, Account.class);
+        result = new ObjectMapper().readValue(rgResultDecode, clazz);
 
       } catch (IOException e) {
         e.printStackTrace();
@@ -200,4 +199,5 @@ public class Api_Client {
     }
     return result;
   }
+
 }
