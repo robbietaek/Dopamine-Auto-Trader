@@ -13,12 +13,13 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AutoTrader {
+public class BithumbAutoTrader {
 
   private final TradeService tradeService;
 
@@ -29,7 +30,7 @@ public class AutoTrader {
   @Value("${bithumb.apiSecret}")
   private String apiSecret;
 
-  //  @Scheduled(cron = "*/1 * * * * *")
+  @Scheduled(cron = "*/1 * * * * *")
   public void autoTrading() {
 
     Account account = RequestManager.getAccountInfo(apiKey, apiSecret);
@@ -39,7 +40,8 @@ public class AutoTrader {
 
     if (!myCoinMap.isEmpty()) {
       for (String coinName : myCoinMap.keySet()) {
-        OrderSuccessInfo orderSuccessInfo = RequestManager.getOrderSuccessInfo(apiKey, apiSecret,
+        OrderSuccessInfo orderSuccessInfo = RequestManager.getOrderSuccessInfo(apiKey,
+            apiSecret,
             "1",
             coinName);
         String boughtUnits = orderSuccessInfo.getData().get(0).getUnits();

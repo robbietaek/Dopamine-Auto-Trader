@@ -17,7 +17,7 @@ public final class RequestManager {
 
   public static Account getAccountInfo(String apiConnectKey, String apiSecretKey) {
     Account account = new Account();
-    Api_Client api = new Api_Client(apiConnectKey, apiSecretKey);
+    ApiClient api = new ApiClient(apiConnectKey, apiSecretKey);
 
     HashMap<String, String> rgParams = new HashMap<String, String>();
     rgParams.put("currency", "ALL");
@@ -34,7 +34,7 @@ public final class RequestManager {
   public static OrderSuccessInfo getOrderSuccessInfo(String apiConnectKey,
       String apiSecretKey, String searchGb, String coinName) {
     OrderSuccessInfo orderSuccessInfo = new OrderSuccessInfo();
-    Api_Client api = new Api_Client(apiConnectKey, apiSecretKey);
+    ApiClient api = new ApiClient(apiConnectKey, apiSecretKey);
 
     HashMap<String, String> rgParams = new HashMap<String, String>();
     rgParams.put("offset", "0");
@@ -57,7 +57,7 @@ public final class RequestManager {
   public static Sell addCurrentPriceSellOrder(String apiConnectKey,
       String apiSecretKey, String sellUnits, String coinName) {
     Sell sellInfo = new Sell();
-    Api_Client api = new Api_Client(apiConnectKey, apiSecretKey);
+    ApiClient api = new ApiClient(apiConnectKey, apiSecretKey);
 
     HashMap<String, String> rgParams = new HashMap<String, String>();
     rgParams.put("units", sellUnits);
@@ -77,7 +77,7 @@ public final class RequestManager {
   public static Sell addSelectPriceSellOrder(String apiConnectKey,
       String apiSecretKey, String sellUnits, String price, String coinName) {
     Sell sellInfo = new Sell();
-    Api_Client api = new Api_Client(apiConnectKey, apiSecretKey);
+    ApiClient api = new ApiClient(apiConnectKey, apiSecretKey);
 
     HashMap<String, String> rgParams = new HashMap<String, String>();
     rgParams.put("order_currency", coinName);
@@ -99,7 +99,7 @@ public final class RequestManager {
   public static Buy addCurrentPriceBuyOrder(String apiConnectKey,
       String apiSecretKey, String buyUnits, String coinName) {
     Buy buyInfo = new Buy();
-    Api_Client api = new Api_Client(apiConnectKey, apiSecretKey);
+    ApiClient api = new ApiClient(apiConnectKey, apiSecretKey);
 
     HashMap<String, String> rgParams = new HashMap<String, String>();
     rgParams.put("units", buyUnits);
@@ -119,7 +119,7 @@ public final class RequestManager {
   public static Buy addSelectPriceBuyOrder(String apiConnectKey,
       String apiSecretKey, String buyUnits, String price, String coinName) {
     Buy buyInfo = new Buy();
-    Api_Client api = new Api_Client(apiConnectKey, apiSecretKey);
+    ApiClient api = new ApiClient(apiConnectKey, apiSecretKey);
 
     HashMap<String, String> rgParams = new HashMap<String, String>();
     rgParams.put("order_currency", coinName);

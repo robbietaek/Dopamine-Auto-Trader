@@ -14,13 +14,13 @@ import org.apache.commons.codec.binary.Hex;
 
 
 @SuppressWarnings("unused")
-public class Api_Client {
+public class ApiClient {
 
   protected String api_url = "https://api.bithumb.com";
   protected String api_key;
   protected String api_secret;
 
-  public Api_Client(String api_key, String api_secret) {
+  public ApiClient(String api_key, String api_secret) {
     this.api_key = api_key;
     this.api_secret = api_secret;
   }

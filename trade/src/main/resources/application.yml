@@ -9,6 +9,10 @@ logging:
           # 오류만 출력
           autoconfigure: ERROR
 
+upbit:
+  accessKey:
+  secretKey:
+
 bithumb:
   apiKey:
   apiSecret:
