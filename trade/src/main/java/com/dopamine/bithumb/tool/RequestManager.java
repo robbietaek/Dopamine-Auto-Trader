@@ -1,7 +1,6 @@
-package com.dopamine.bithumb.common;
+package com.dopamine.bithumb.tool;
 
 
-import com.dopamine.bithumb.tool.Api_Client;
 import com.dopamine.bithumb.trade.model.account.Account;
 import com.dopamine.bithumb.trade.model.ask_price.AskPrice;
 import com.dopamine.bithumb.trade.model.buy.Buy;
@@ -14,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
-public final class ApiCaller {
+public final class RequestManager {
 
   public static Account getAccountInfo(String apiConnectKey, String apiSecretKey) {
     Account account = new Account();

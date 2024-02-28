@@ -1,6 +1,6 @@
 package com.dopamine.bithumb.trade.service;
 
-import com.dopamine.bithumb.common.ApiCaller;
+import com.dopamine.bithumb.tool.RequestManager;
 import com.dopamine.bithumb.trade.model.current_price.CurrentPrice;
 import com.dopamine.bithumb.trade.type.CoinName;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class TradeService {
 
   public CoinName getMostFluctateCoinName(String exceptionCoin) {
-    CurrentPrice currentPrice = ApiCaller.getCurrentPrice();
+    CurrentPrice currentPrice = RequestManager.getCurrentPrice();
     Map<String, Double> fluctateRate24H = new HashMap<>();
 
     for (String coinName : currentPrice.getData().getAllCoinCurrentPrice().keySet()) {
