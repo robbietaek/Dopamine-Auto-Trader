@@ -78,4 +78,8 @@ public final class QuotationRequestManager {
     return currentPrice;
   }
 
+  public static CurrentPrice getOneTickerCurrentPrice(String markets) {
+    return getTickerCurrentPrice(List.of(markets)).get(0);
+  }
+
 }

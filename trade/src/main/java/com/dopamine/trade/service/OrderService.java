@@ -16,12 +16,15 @@ public class OrderService {
 
   private final OrderDao orderDao;
 
-  public Order orderCoin(String market, Side side, String volume, double price,
-      OrderType ordType) {
-
-    Order order = OrderRequestManager.orderCoin(market, side, volume, price, ordType);
+  public Order bidPriceCoin(String market, double price) {
+    Order order = OrderRequestManager.orderCoin(market, Side.BID, null, price, OrderType.PRICE);
     orderDao.insertOrderInformation(order);
+    return order;
+  }
 
+  public Order askMarketCoin(String market, String volume) {
+    Order order = OrderRequestManager.orderCoin(market, Side.ASK, volume, 0, OrderType.MARKET);
+    orderDao.insertOrderInformation(order);
     return order;
   }
 

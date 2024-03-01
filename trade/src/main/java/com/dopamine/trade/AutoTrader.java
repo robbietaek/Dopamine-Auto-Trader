@@ -4,8 +4,6 @@ import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
-import com.dopamine.api_call.type.OrderType;
-import com.dopamine.api_call.type.Side;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
@@ -35,17 +33,17 @@ public class AutoTrader {
 
     if (coinAccountList.size() == 0) {
       double krw = accountService.getKRWStatus();
+      log.info("현금보유량 : {}", krw);
       List<String> askCoinList = quotationService.getBidCoinList(krw);
       for (String market : askCoinList) {
         if (exceptionCoin.contains(market)) {
           continue;
         }
-
-        if (exceptionCoin.size() > 3) {
+        if (exceptionCoin.size() > 2) {
           exceptionCoin.poll();
         }
 
-        Order order = orderService.orderCoin(market, Side.BID, null, krw * 0.99, OrderType.PRICE);
+        Order order = orderService.bidPriceCoin(market, krw * 0.999);
         log.info("[매수주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
 
         exceptionCoin.add(market);
@@ -53,31 +51,23 @@ public class AutoTrader {
       }
     } else {
       for (Accounts account : coinAccountList) {
-        double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
-        CurrentPrice currentPrice = QuotationRequestManager.getTickerCurrentPrice(
-            List.of(account.getCurrency())).get(0);
-        if (avgBuyPrice * 1.003 < currentPrice.getTradePrice()) {
-          Order order = orderService.orderCoin(account.getCurrency(), Side.ASK,
-              account.getBalance(),
-              1000000000d,
-              OrderType.MARKET);
-          log.info("[익절매도 주문완료] 코인명 : {}, 매도 가격 : {}, 고유아이디 : {}", order.getMarket(),
-              order.getPrice(),
-              order.getUuid());
-          continue;
-        } else if (avgBuyPrice * 0.97 > currentPrice.getTradePrice()) {
-          Order order = orderService.orderCoin(account.getCurrency(), Side.ASK,
-              account.getBalance(),
-              1000000000d,
-              OrderType.MARKET);
-          log.info("[손절매도 주문완료] 코인명 : {}, 매도 가격 : {}, 고유아이디 : {}", order.getMarket(),
-              order.getPrice(),
-              order.getUuid());
-          continue;
+        if (!exceptionCoin.contains("KRW-" + account.getCurrency())) {
+          exceptionCoin.add("KRW-" + account.getCurrency());
         }
 
-//        log.info("[매도대기] 코인명 : {}, 구매 가격 : {}, 현재 가격 : {}", "KRW-" + account.getCurrency(),
-//            avgBuyPrice, currentPrice.getTradePrice());
+        double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
+        CurrentPrice currentPrice = QuotationRequestManager.getOneTickerCurrentPrice(
+            account.getCurrency());
+        if (avgBuyPrice * 1.005 < currentPrice.getTradePrice()) {
+          Order order = orderService.askMarketCoin(account.getCurrency(),
+              account.getBalance());
+          log.info("[익절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
+        } else if (avgBuyPrice * 0.97 > currentPrice.getTradePrice()) {
+          Order order = orderService.askMarketCoin(account.getCurrency(),
+              account.getBalance());
+          log.info("[손절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(),
+              order.getUuid());
+        }
       }
     }
 

@@ -25,7 +25,7 @@ public class QuotationService {
       //거래량 급등
       boolean tradingVolumeSoaring = marketCode.getMarketEvent().getCaution()
           .isTradingVolumeSoaring();
-      //입금량 급등
+      //입금량 급등락
       boolean depositAmountSoaring = marketCode.getMarketEvent().getCaution()
           .isDepositAmountSoaring();
       //해외와 가격차이 경보
@@ -36,6 +36,7 @@ public class QuotationService {
           .isConcentrationOfSmallAccounts();
 
       if (!priceFluctuations
+          && !globalPricedifferences
           && !concentrationOfSmallAccounts
           && marketCode.getMarket()
           .startsWith("KRW")) {
