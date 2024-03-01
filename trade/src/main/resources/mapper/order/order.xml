@@ -3,6 +3,26 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dopamine.trade.dao.OrderDao">
 
+  <insert id="insertOrderInformation" parameterType="com.dopamine.api_call.model.response.order.order.Order">
+    INSERT INTO
+      tb_coin_order_history
+    (
+      uuid
+      , order_side
+      , order_type
+      , market
+      , order_time
+    )
+    VALUES
+    (
+      #{order.uuid}
+      , #{order.side}
+      , #{order.ordType}
+      , #{order.market}
+      , NOW()
+    )
+  </insert>
+
   <select id="selectOrderHistory" resultType="com.dopamine.trade.model.OrderHistory">
     SELECT
       uuid

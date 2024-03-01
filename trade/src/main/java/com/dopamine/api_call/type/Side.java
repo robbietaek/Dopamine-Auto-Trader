@@ -1,17 +1,16 @@
 package com.dopamine.api_call.type;
 
-public enum OrderBy {
-  ASC("asc"),
-  DESC("desc");
+public enum Side {
+  BID("bid"),
+  ASK("ask");
 
   private final String value;
 
-  OrderBy(String value) {
+  Side(String value) {
     this.value = value;
   }
 
   public String getValue() {
     return value;
   }
-
 }

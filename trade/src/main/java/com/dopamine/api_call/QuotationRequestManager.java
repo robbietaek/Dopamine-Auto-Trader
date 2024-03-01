@@ -52,7 +52,11 @@ public final class QuotationRequestManager {
 
     ArrayList<String> queryElements = new ArrayList<>();
     for (String market : markets) {
-      queryElements.add("markets=" + market);
+      if (market.startsWith("KRW-")) {
+        queryElements.add("markets=" + market);
+      } else {
+        queryElements.add("markets=KRW-" + market);
+      }
     }
     String queryString = String.join("&", queryElements.toArray(new String[0]));
 
@@ -64,7 +68,6 @@ public final class QuotationRequestManager {
     List<CurrentPrice> currentPrice = new ArrayList<>();
     try {
       Response response = client.newCall(request).execute();
-      System.out.println(response);
       currentPrice = objectMapper.readValue(response.body().string(),
           new TypeReference<List<CurrentPrice>>() {
           });

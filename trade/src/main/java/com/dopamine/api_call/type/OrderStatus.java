@@ -6,9 +6,14 @@ public enum OrderStatus {
   DONE("done"),
   CANCEL("cancel");
 
-  private String status;
+  private final String value;
 
-  OrderStatus(String status) {
-    this.status = status;
+  OrderStatus(String value) {
+    this.value = value;
   }
+
+  public String getValue() {
+    return value;
+  }
+
 }

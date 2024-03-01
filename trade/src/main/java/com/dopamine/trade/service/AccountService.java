@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class AccountService {
 
-  public Double getKRWStatus() {
+  public double getKRWStatus() {
     List<Accounts> accounts = AccountRequestManager.getAccounts();
     double krw = 0d;
 
     for (Accounts account : accounts) {
       if (account.getCurrency().equals("KRW")) {
-        krw = Double.parseDouble(account.getCurrency());
+        krw = Double.parseDouble(account.getBalance());
         break;
       }
     }

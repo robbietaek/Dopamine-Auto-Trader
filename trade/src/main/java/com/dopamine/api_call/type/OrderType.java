@@ -1,17 +1,18 @@
 package com.dopamine.api_call.type;
 
-public enum OrderBy {
-  ASC("asc"),
-  DESC("desc");
+public enum OrderType {
+
+  LIMIT("limit"),
+  PRICE("price"),
+  MARKET("market");
 
   private final String value;
 
-  OrderBy(String value) {
+  OrderType(String value) {
     this.value = value;
   }
 
   public String getValue() {
     return value;
   }
-
 }
