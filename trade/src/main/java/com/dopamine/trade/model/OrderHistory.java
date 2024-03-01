@@ -1,0 +1,23 @@
+package com.dopamine.trade.model;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import lombok.Data;
+
+@Data
+public class OrderHistory implements Serializable {
+
+  @Serial
+  private static final long serialVersionUID = 4494925685373273725L;
+
+  private String uuid;
+  private String orderSide;
+  private String orderType;
+  private String market;
+  private LocalDateTime orderTime;
+  private Double volume;
+  private Double executedVolume;
+  private Double remaining_volume;
+  
+}
