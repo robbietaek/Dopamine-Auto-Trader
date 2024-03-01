@@ -35,7 +35,7 @@ public class AutoTrader {
 
     if (coinAccountList.size() == 0) {
       double krw = accountService.getKRWStatus();
-      List<String> askCoinList = quotationService.getAskCoinList(krw);
+      List<String> askCoinList = quotationService.getBidCoinList(krw);
       for (String market : askCoinList) {
         if (exceptionCoin.contains(market)) {
           continue;

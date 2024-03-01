@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class QuotationService {
 
-  public List<String> getAskCoinList(Double krw) {
+  public List<String> getBidCoinList(Double krw) {
     List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList();
-    List<String> askCoinList = new LinkedList<>();
+    List<String> bidCoinList = new LinkedList<>();
 
     for (MarketCode marketCode : marketCodeList) {
       //가격 급등락
@@ -39,14 +39,14 @@ public class QuotationService {
           && !concentrationOfSmallAccounts
           && marketCode.getMarket()
           .startsWith("KRW")) {
-        askCoinList.add(marketCode.getMarket());
+        bidCoinList.add(marketCode.getMarket());
       }
     }
 
     List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
-            askCoinList).stream().filter(a -> a.getChange().equals("RISE"))
+            bidCoinList).stream().filter(a -> a.getChange().equals("RISE"))
         .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed()).toList();
-    askCoinList.clear();
+    bidCoinList.clear();
 
     for (CurrentPrice currentPrice : currentPriceList) {
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
@@ -70,10 +70,10 @@ public class QuotationService {
         continue;
       }
 
-      askCoinList.add(currentPrice.getMarket());
+      bidCoinList.add(currentPrice.getMarket());
     }
 
-    return askCoinList;
+    return bidCoinList;
   }
 
 
