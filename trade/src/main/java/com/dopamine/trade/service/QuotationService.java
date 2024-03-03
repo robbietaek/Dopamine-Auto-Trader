@@ -35,9 +35,7 @@ public class QuotationService {
       boolean concentrationOfSmallAccounts = marketCode.getMarketEvent().getCaution()
           .isConcentrationOfSmallAccounts();
 
-      if (!priceFluctuations
-          && !globalPricedifferences
-          && !concentrationOfSmallAccounts
+      if (!concentrationOfSmallAccounts
           && marketCode.getMarket()
           .startsWith("KRW")) {
         bidCoinList.add(marketCode.getMarket());

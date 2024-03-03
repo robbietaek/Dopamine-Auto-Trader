@@ -102,7 +102,6 @@ public final class OrderRequestManager {
 
       HttpResponse response = client.execute(request);
       HttpEntity entity = response.getEntity();
-
       individualOrderStatus = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"),
           IndividualOrderStatus.class);
     } catch (IOException e) {
@@ -112,12 +111,15 @@ public final class OrderRequestManager {
   }
 
   public static List<NumerousOrderStatus> getNumerousOrderStatus(String market, String[] uuids,
-      OrderStatus[] states, Integer page, Integer limit, OrderBy orderBy) {
+      OrderStatus state, OrderStatus[] states, Integer page, Integer limit, OrderBy orderBy) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("market", market);
     params.put("page", page);
     params.put("limit", limit);
-    params.put("order_by", orderBy);
+    params.put("order_by", orderBy.getValue());
+    if (state != null) {
+      params.put("state", state.getValue());
+    }
 
     ArrayList<String> queryElements = new ArrayList<>();
     for (Map.Entry<String, Object> entity : params.entrySet()) {
@@ -143,7 +145,6 @@ public final class OrderRequestManager {
 
       HttpResponse response = client.execute(request);
       HttpEntity entity = response.getEntity();
-
       numerousOrderStatus = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"),
           new TypeReference<List<NumerousOrderStatus>>() {
           });

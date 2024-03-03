@@ -58,11 +58,11 @@ public class AutoTrader {
         double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
         CurrentPrice currentPrice = QuotationRequestManager.getOneTickerCurrentPrice(
             account.getCurrency());
-        if (avgBuyPrice * 1.005 < currentPrice.getTradePrice()) {
+        if (avgBuyPrice * 1.003 < currentPrice.getTradePrice()) {
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
           log.info("[익절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
-        } else if (avgBuyPrice * 0.97 > currentPrice.getTradePrice()) {
+        } else if (avgBuyPrice * 0.95 > currentPrice.getTradePrice()) {
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
           log.info("[손절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(),

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dopamine.record.dao.RecordDao">
+
+  <insert id="insertOrderResultList" parameterType="com.dopamine.api_call.model.response.order.numerous.NumerousOrderStatus">
+    INSERT INTO tb_order_result(
+      "uuid"
+      , side
+      , ord_type
+      , price
+      , state
+      , market
+      , created_at
+      , volume
+      , remaining_volume
+      , reserved_fee
+      , remaining_fee
+      , paid_fee
+      , "locked"
+      , executed_volume
+      , trades_count
+    ) VALUES
+    <foreach collection="numerousOrderStatusList" item="item" separator=",">
+      (
+        #{item.uuid}
+        , #{item.side}
+        , #{item.ordType}
+        , #{item.price}
+        , #{item.state}
+        , #{item.market}
+        , #{item.createdAt}
+        , #{item.volume}
+        , #{item.remainingVolume}
+        , #{item.reservedFee}
+        , #{item.remainingFee}
+        , #{item.paidFee}
+        , #{item.locked}
+        , #{item.executedVolume}
+        , #{item.tradesCount}
+      )
+    </foreach>
+    ON CONFLICT ("uuid")
+    DO UPDATE
+    SET price = EXCLUDED.price
+        , volume = EXCLUDED.volume
+  </insert>
+
+  <select id = "selectOrderResultListByState" resultType="com.dopamine.api_call.model.response.order.numerous.NumerousOrderStatus">
+    SELECT
+      "uuid"
+      , side
+      , ord_type
+      , price
+      , state
+      , market
+      , created_at
+      , volume
+      , remaining_volume
+      , reserved_fee
+      , remaining_fee
+      , paid_fee
+      , "locked"
+      , executed_volume
+      , trades_count
+    FROM
+      tb_order_result
+    WHERE
+      state = #{state}
+    ORDER BY
+      created_at DESC;
+  </select>
+
+
+</mapper>

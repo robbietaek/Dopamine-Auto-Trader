@@ -30,11 +30,31 @@
       , order_type
       , market
       , order_time
-      , volume
-      , executed_volume
-      , remaining_volume
     FROM
       tb_coin_order_history
+    ORDER BY
+      order_time DESC
+    LIMIT
+      #{limit}
+  </select>
+
+  <select id="selectOrderHistoryGroupByMarket" resultType="com.dopamine.trade.model.OrderHistoryGroupByMarket">
+    SELECT
+      market
+      , ARRAY_TO_STRING(ARRAY_AGG(uuid), ',') AS uuid_list
+    FROM
+      (
+        SELECT
+          market AS market
+          , "uuid" AS uuid
+        FROM
+          tb_coin_order_history
+        ORDER BY
+          order_time DESC
+        LIMIT #{limit}
+      )
+    GROUP BY
+      market
   </select>
 
 </mapper>
