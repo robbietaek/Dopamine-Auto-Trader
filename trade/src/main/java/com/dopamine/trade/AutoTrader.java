@@ -4,6 +4,7 @@ import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
+import com.dopamine.common.service.CommonService;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
@@ -23,6 +24,7 @@ public class AutoTrader {
   private final AccountService accountService;
   private final OrderService orderService;
   private final QuotationService quotationService;
+  private final CommonService commonService;
 
   static Queue<String> exceptionCoin = new LinkedList<>();
 
@@ -50,6 +52,9 @@ public class AutoTrader {
         break;
       }
     } else {
+      double askRateValue = Double.parseDouble(commonService.getConfig("ASK", "rate"));
+      double bidRateValue = Double.parseDouble(commonService.getConfig("BID", "rate"));
+
       for (Accounts account : coinAccountList) {
         if (!exceptionCoin.contains("KRW-" + account.getCurrency())) {
           exceptionCoin.add("KRW-" + account.getCurrency());
@@ -58,11 +63,11 @@ public class AutoTrader {
         double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
         CurrentPrice currentPrice = QuotationRequestManager.getOneTickerCurrentPrice(
             account.getCurrency());
-        if (avgBuyPrice * 1.003 < currentPrice.getTradePrice()) {
+        if (avgBuyPrice * askRateValue < currentPrice.getTradePrice()) {
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
           log.info("[익절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
-        } else if (avgBuyPrice * 0.95 > currentPrice.getTradePrice()) {
+        } else if (avgBuyPrice * bidRateValue > currentPrice.getTradePrice()) {
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
           log.info("[손절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(),

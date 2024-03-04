@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dopamine.common.dao.ConfigDao">
+
+  <insert id="upsertConfig">
+    INSERT INTO
+      tb_config
+    (
+      group
+      , key
+      , value
+    )
+    VALUES
+    (
+      #{group}
+      , #{key}
+      , #{value}
+    )
+    ON CONFLICT (group, key)
+    DO UPDATE
+    SET key = EXCLUDED.key
+    , value = EXCLUDED.value
+  </insert>
+
+  <select id="selectConfig" resultType="String">
+    SELECT
+      value
+    FROM
+      tb_config
+    WHERE
+      group = #{group}
+    AND
+      key = #{key}
+  </select>
+
+</mapper>
