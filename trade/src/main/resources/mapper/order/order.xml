@@ -12,8 +12,8 @@
       , order_type
       , market
       , order_time
-      , bid_rate
-      , ask_rate
+      , profit_rate
+      , loss_rate
       , time_limit
     )
     VALUES
@@ -23,8 +23,8 @@
       , #{order.ordType}
       , #{order.market}
       , NOW()
-      , (SELECT value FROM tb_config WHERE "group" = 'BID' AND key = 'rate')
-      , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'rate')
+      , (SELECT value FROM tb_config WHERE "group" = 'BID' AND key = 'profit_rate')
+      , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'loss_rate')
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'time_limit')
     )
   </insert>
@@ -36,6 +36,9 @@
       , order_type
       , market
       , order_time
+      , profit_rate
+      , loss_rate
+      , time_limit
     FROM
       tb_coin_order_history
     ORDER BY

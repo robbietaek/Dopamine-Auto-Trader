@@ -58,8 +58,8 @@ public class AutoTrader {
         break;
       }
     } else {
-      double askRateValue = Double.parseDouble(commonService.getConfig("ASK", "rate"));
-      double bidRateValue = Double.parseDouble(commonService.getConfig("BID", "rate"));
+      double askProfitRateValue = Double.parseDouble(commonService.getConfig("ASK", "profit_rate"));
+      double askLossRateValue = Double.parseDouble(commonService.getConfig("ASK", "loss_rate"));
       double askTimeLimitSecond = Integer.parseInt(commonService.getConfig("ASK", "time_limit"));
 
       for (Accounts account : coinAccountList) {
@@ -70,11 +70,11 @@ public class AutoTrader {
         double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
         CurrentPrice currentPrice = QuotationRequestManager.getOneTickerCurrentPrice(
             account.getCurrency());
-        if (avgBuyPrice * askRateValue < currentPrice.getTradePrice()) {
+        if (avgBuyPrice * askProfitRateValue < currentPrice.getTradePrice()) {
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
           log.info("[익절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
-        } else if (avgBuyPrice * bidRateValue > currentPrice.getTradePrice()) {
+        } else if (avgBuyPrice * askLossRateValue > currentPrice.getTradePrice()) {
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
           log.info("[손절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(),
