@@ -29,13 +29,12 @@ public class AutoTrader {
   private final CommonService commonService;
 
   static Queue<String> exceptionCoin = new LinkedList<>();
+  public static StopWatch stopWatch = new StopWatch();
 
   @Scheduled(cron = "*/1 * * * * *")
   public void autoTrading() {
 
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
-    StopWatch stopWatch = new StopWatch();
-    stopWatch.start();
 
     if (coinAccountList.size() == 0) {
       double krw = accountService.getKRWStatus();
