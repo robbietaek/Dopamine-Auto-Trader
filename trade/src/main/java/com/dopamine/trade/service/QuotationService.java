@@ -5,39 +5,63 @@ import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.order.available.OrderAvailable;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
+import com.dopamine.common.service.CommonService;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class QuotationService {
+
+  private final CommonService commonService;
 
   public List<String> getBidCoinList(Double krw) {
     List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList();
     List<String> bidCoinList = new LinkedList<>();
 
     for (MarketCode marketCode : marketCodeList) {
+
       //가격 급등락
       boolean priceFluctuations = marketCode.getMarketEvent().getCaution().isPriceFluctuations();
+      boolean priceFluctuationsOption = Boolean.parseBoolean(
+          commonService.getConfig("BID", "priceFluctuations"));
+
       //거래량 급등
       boolean tradingVolumeSoaring = marketCode.getMarketEvent().getCaution()
           .isTradingVolumeSoaring();
+      boolean tradingVolumeSoaringOption = Boolean.parseBoolean(
+          commonService.getConfig("BID", "tradingVolumeSoaring"));
+
       //입금량 급등락
       boolean depositAmountSoaring = marketCode.getMarketEvent().getCaution()
           .isDepositAmountSoaring();
+      boolean depositAmountSoaringOption = Boolean.parseBoolean(
+          commonService.getConfig("BID", "depositAmountSoaring"));
+
       //해외와 가격차이 경보
       boolean globalPricedifferences = marketCode.getMarketEvent().getCaution()
           .isGlobalPricedifferences();
+      boolean globalPricedifferencesOption = Boolean.parseBoolean(
+          commonService.getConfig("BID", "globalPricedifferences"));
+
       //소수 계정에 집중되어있음
       boolean concentrationOfSmallAccounts = marketCode.getMarketEvent().getCaution()
           .isConcentrationOfSmallAccounts();
 
-      if (!concentrationOfSmallAccounts
-          && marketCode.getMarket()
-          .startsWith("KRW")) {
+      if (
+          ((priceFluctuations == priceFluctuationsOption)
+              || (tradingVolumeSoaring == tradingVolumeSoaringOption)
+              || (depositAmountSoaring == depositAmountSoaringOption)
+              || (globalPricedifferences == globalPricedifferencesOption)
+          )
+              && !concentrationOfSmallAccounts
+              && marketCode.getMarket()
+              .startsWith("KRW")) {
         bidCoinList.add(marketCode.getMarket());
       }
     }
@@ -46,10 +70,16 @@ public class QuotationService {
             bidCoinList).stream().filter(a -> a.getChange().equals("RISE"))
         .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed()).toList();
     bidCoinList.clear();
+    double standard = currentPriceList.size() * 0.2;
 
-    for (CurrentPrice currentPrice : currentPriceList) {
+    for (int i = 0; i < currentPriceList.size(); i++) {
+      if (i < standard) {
+        // 최상단에서 1/4 지점을 선정한다.
+        continue;
+      }
+
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
-          currentPrice.getMarket());
+          currentPriceList.get(i).getMarket());
 
       if (Double.parseDouble(orderAvailable.getBidFee()) > 0.0005d
           || Double.parseDouble(orderAvailable.getAskFee()) > 0.0005d) {
@@ -69,7 +99,7 @@ public class QuotationService {
         continue;
       }
 
-      bidCoinList.add(currentPrice.getMarket());
+      bidCoinList.add(currentPriceList.get(i).getMarket());
     }
 
     return bidCoinList;

@@ -11,8 +11,10 @@ import com.dopamine.trade.service.QuotationService;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,8 @@ public class AutoTrader {
   public void autoTrading() {
 
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
+    StopWatch stopWatch = new StopWatch();
+    stopWatch.start();
 
     if (coinAccountList.size() == 0) {
       double krw = accountService.getKRWStatus();
@@ -41,12 +45,14 @@ public class AutoTrader {
         if (exceptionCoin.contains(market)) {
           continue;
         }
-        if (exceptionCoin.size() > 2) {
+        if (exceptionCoin.size() > 3) {
           exceptionCoin.poll();
         }
 
         Order order = orderService.bidPriceCoin(market, krw * 0.999);
         log.info("[매수주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
+        stopWatch.reset();
+        stopWatch.start();
 
         exceptionCoin.add(market);
         break;
@@ -54,6 +60,7 @@ public class AutoTrader {
     } else {
       double askRateValue = Double.parseDouble(commonService.getConfig("ASK", "rate"));
       double bidRateValue = Double.parseDouble(commonService.getConfig("BID", "rate"));
+      double askTimeLimitSecond = Integer.parseInt(commonService.getConfig("ASK", "time_limit"));
 
       for (Accounts account : coinAccountList) {
         if (!exceptionCoin.contains("KRW-" + account.getCurrency())) {
@@ -72,6 +79,13 @@ public class AutoTrader {
               account.getBalance());
           log.info("[손절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(),
               order.getUuid());
+          stopWatch.stop();
+        } else if (stopWatch.getTime(TimeUnit.SECONDS) > askTimeLimitSecond) {
+          Order order = orderService.askMarketCoin(account.getCurrency(),
+              account.getBalance());
+          log.info("[시간초과 손절매도 주문완료] 코인명 : {}, 고유아이디 : {}, 제한시간초 : {}", order.getMarket(),
+              order.getUuid(), askTimeLimitSecond);
+          stopWatch.stop();
         }
       }
     }

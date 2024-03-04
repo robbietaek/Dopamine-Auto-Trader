@@ -7,7 +7,7 @@
     INSERT INTO
       tb_config
     (
-      group
+      "group"
       , key
       , value
     )
@@ -29,7 +29,7 @@
     FROM
       tb_config
     WHERE
-      group = #{group}
+      "group" = #{group}
     AND
       key = #{key}
   </select>
