@@ -70,14 +70,8 @@ public class QuotationService {
             bidCoinList).stream().filter(a -> a.getChange().equals("RISE"))
         .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed()).toList();
     bidCoinList.clear();
-    double standard = currentPriceList.size() * 0.2;
 
     for (int i = 0; i < currentPriceList.size(); i++) {
-      if (i < standard) {
-        // 최상단에서 1/4 지점을 선정한다.
-        continue;
-      }
-
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
           currentPriceList.get(i).getMarket());
 

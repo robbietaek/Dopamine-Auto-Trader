@@ -6,9 +6,12 @@ import java.io.Serial;
 import java.io.Serializable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 @Getter
+@Setter
 @ToString
 @EqualsAndHashCode
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -79,5 +82,13 @@ public class Order implements Serializable {
 
   @JsonProperty("trades_count")
   private Integer tradesCount;
+
+  public boolean isSuccess() {
+    if (uuid == null || StringUtils.isEmpty(uuid)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 }
 

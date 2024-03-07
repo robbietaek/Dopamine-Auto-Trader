@@ -2,6 +2,7 @@ package com.dopamine.api_call;
 
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
+import com.dopamine.api_call.model.response.quotation.order_book.OrderBook;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
@@ -80,6 +81,42 @@ public final class QuotationRequestManager {
 
   public static CurrentPrice getOneTickerCurrentPrice(String markets) {
     return getTickerCurrentPrice(List.of(markets)).get(0);
+  }
+
+  public static List<OrderBook> getOrderBookList(List<String> markets) {
+
+    if (markets.size() == 0) {
+      return new ArrayList<OrderBook>();
+    }
+
+    OkHttpClient client = new OkHttpClient();
+
+    ArrayList<String> queryElements = new ArrayList<>();
+    for (String market : markets) {
+      if (market.startsWith("KRW-")) {
+        queryElements.add("markets=" + market);
+      } else {
+        queryElements.add("markets=KRW-" + market);
+      }
+    }
+    String queryString = String.join("&", queryElements.toArray(new String[0]));
+
+    Request request = new Request.Builder()
+        .url(serverUrl + "/v1/orderbook?" + queryString)
+        .get()
+        .addHeader("accept", "application/json")
+        .build();
+    List<OrderBook> orderBookList = new ArrayList<>();
+    try {
+      Response response = client.newCall(request).execute();
+      orderBookList = objectMapper.readValue(response.body().string(),
+          new TypeReference<List<OrderBook>>() {
+          });
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return orderBookList;
   }
 
 }

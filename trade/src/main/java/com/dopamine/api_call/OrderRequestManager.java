@@ -172,19 +172,25 @@ public final class OrderRequestManager {
     //주문타입 (limit : 지정가 주문, price : 시장가 주문(매수), market : 시장가 주문(매도))
     params.put("ord_type", ordType.getValue());
 
-    //시장가 매수 주문이 아닌 경우
-    if (!ordType.getValue().equals("price")) {
-      //주문량
+    // 시장가 주문(매수)
+    if (ordType.equals(OrderType.PRICE)) {
       //시장가 매수 주문의 경우 ord_type을 price로 설정하고 volume을 null 혹은 제외해야됩니다.
+      params.put("price", exchangeUnit(market, price));
+    }
+    //지정가 주문(매수)
+    else if (ordType.equals(OrderType.LIMIT) && side.equals(Side.BID)) {
+      params.put("price", exchangeUnit(market, price));
       params.put("volume", volume);
     }
-
-    // 시장가 매도 주문이 아닌 경우
-    if (!ordType.getValue().equals("market")) {
-      //주문가격
+    //시장가 주문(매도)
+    else if (ordType.equals(OrderType.MARKET)) {
       //시장가 매도 주문의 경우 ord_type을 market로 설정하고 price을 null 혹은 제외해야됩니다.
-
-      params.put("price", exchangeUnit(market, price));
+      params.put("volume", volume);
+    }
+    //지정가 주문(매도)
+    else if (ordType.equals(OrderType.LIMIT) && side.equals(Side.ASK)) {
+      params.put("price", String.valueOf(price));
+      params.put("volume", volume);
     }
 
     ArrayList<String> queryElements = new ArrayList<>();

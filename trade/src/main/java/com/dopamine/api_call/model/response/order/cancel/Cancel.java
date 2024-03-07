@@ -7,6 +7,7 @@ import java.io.Serializable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 @Getter
 @ToString
@@ -79,4 +80,13 @@ public class Cancel implements Serializable {
 
   @JsonProperty("trades_count")
   private Integer tradesCount;
+
+  public boolean isSuccess() {
+    if (uuid == null || StringUtils.isEmpty(uuid)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
 }

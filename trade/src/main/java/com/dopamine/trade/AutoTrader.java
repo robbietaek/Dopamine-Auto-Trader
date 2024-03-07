@@ -3,7 +3,7 @@ package com.dopamine.trade;
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
-import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
+import com.dopamine.api_call.model.response.quotation.order_book.OrderBook;
 import com.dopamine.common.service.CommonService;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
@@ -31,9 +31,8 @@ public class AutoTrader {
   static Queue<String> exceptionCoin = new LinkedList<>();
   public static StopWatch stopWatch = new StopWatch();
 
-  @Scheduled(cron = "*/1 * * * * *")
+  @Scheduled(fixedDelay = 100)
   public void autoTrading() {
-
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
 
     if (coinAccountList.size() == 0) {
@@ -49,12 +48,16 @@ public class AutoTrader {
         }
 
         Order order = orderService.bidPriceCoin(market, krw * 0.999);
-        log.info("[매수주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
-        stopWatch.reset();
-        stopWatch.start();
 
-        exceptionCoin.add(market);
-        break;
+        if (order.isSuccess()) {
+          log.info("[매수주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
+          stopWatch.reset();
+          stopWatch.start();
+
+          exceptionCoin.add(market);
+          break;
+        }
+
       }
     } else {
       double askProfitRateValue = Double.parseDouble(commonService.getConfig("ASK", "profit_rate"));
@@ -67,24 +70,36 @@ public class AutoTrader {
         }
 
         double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
-        CurrentPrice currentPrice = QuotationRequestManager.getOneTickerCurrentPrice(
-            account.getCurrency());
-        if (avgBuyPrice * askProfitRateValue < currentPrice.getTradePrice()) {
+        OrderBook currentPrice = QuotationRequestManager.getOrderBookList(
+            List.of(account.getCurrency())).get(0);
+        Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
+
+        if (avgBuyPrice * askProfitRateValue < currentBidPrice) {
+          Order order = orderService.askLimitCoin(account.getCurrency(),
+              account.getBalance(), currentBidPrice);
+          if (order.isSuccess()) {
+            log.info("[익절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
+          }
+
+        } else if (avgBuyPrice * askLossRateValue > currentBidPrice) {
+          orderService.cancelOrder(orderService.getLastOrderUuid());
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
-          log.info("[익절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
-        } else if (avgBuyPrice * askLossRateValue > currentPrice.getTradePrice()) {
-          Order order = orderService.askMarketCoin(account.getCurrency(),
-              account.getBalance());
-          log.info("[손절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(),
-              order.getUuid());
-          stopWatch.stop();
+          if (order.isSuccess()) {
+            log.info("[손절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(),
+                order.getUuid());
+            stopWatch.stop();
+          }
+
         } else if (stopWatch.getTime(TimeUnit.SECONDS) > askTimeLimitSecond) {
+          orderService.cancelOrder(orderService.getLastOrderUuid());
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
-          log.info("[시간초과 손절매도 주문완료] 코인명 : {}, 고유아이디 : {}, 제한시간초 : {}", order.getMarket(),
-              order.getUuid(), askTimeLimitSecond);
-          stopWatch.stop();
+          if (order.isSuccess()) {
+            log.info("[시간초과 손절매도 주문완료] 코인명 : {}, 고유아이디 : {}, 제한시간초 : {}", order.getMarket(),
+                order.getUuid(), askTimeLimitSecond);
+            stopWatch.stop();
+          }
         }
       }
     }
