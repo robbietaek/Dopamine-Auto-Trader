@@ -11,9 +11,9 @@ public class OrderRecorder {
 
   private final OrderRecordService orderRecordService;
 
-  @Scheduled(cron = "*/60 * * * * *")
+  @Scheduled(cron = "*/5 * * * * *")
   public void recordOrderInformation() {
-    orderRecordService.addRecentOrderResult();
+    orderRecordService.addRecentOrderResult(5);
   }
 
 

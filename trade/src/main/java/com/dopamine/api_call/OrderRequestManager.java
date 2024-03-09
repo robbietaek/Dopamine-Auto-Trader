@@ -5,11 +5,11 @@ import com.dopamine.api_call.model.response.order.cancel.Cancel;
 import com.dopamine.api_call.model.response.order.individual.IndividualOrderStatus;
 import com.dopamine.api_call.model.response.order.numerous.NumerousOrderStatus;
 import com.dopamine.api_call.model.response.order.order.Order;
-import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.type.OrderBy;
 import com.dopamine.api_call.type.OrderStatus;
 import com.dopamine.api_call.type.OrderType;
 import com.dopamine.api_call.type.Side;
+import com.dopamine.tool.CalcUnit;
 import com.dopamine.tool.JwtTokenManager;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -175,11 +175,11 @@ public final class OrderRequestManager {
     // 시장가 주문(매수)
     if (ordType.equals(OrderType.PRICE)) {
       //시장가 매수 주문의 경우 ord_type을 price로 설정하고 volume을 null 혹은 제외해야됩니다.
-      params.put("price", exchangeUnit(market, price));
+      params.put("price", CalcUnit.exchangePriceVolumeUnit(market, price).get("price"));
     }
     //지정가 주문(매수)
     else if (ordType.equals(OrderType.LIMIT) && side.equals(Side.BID)) {
-      params.put("price", exchangeUnit(market, price));
+      params.put("price", String.valueOf(price));
       params.put("volume", volume);
     }
     //시장가 주문(매도)
@@ -246,44 +246,6 @@ public final class OrderRequestManager {
     }
 
     return cancel;
-  }
-
-  private static String exchangeUnit(String market, double krw) {
-    CurrentPrice currentPrice = QuotationRequestManager.getTickerCurrentPrice(List.of(market))
-        .get(0);
-
-    double tradePrice = currentPrice.getTradePrice();
-    String returnPrice = "";
-
-    if (tradePrice >= 1000000) {
-      returnPrice = String.valueOf((Math.floor(krw * 0.001) / 0.001));
-      returnPrice = returnPrice.substring(0, returnPrice.indexOf("."));
-    } else if (tradePrice >= 100000) {
-      returnPrice = String.valueOf((Math.floor(krw * 0.01) / 0.01));
-      returnPrice = returnPrice.substring(0, returnPrice.indexOf("."));
-    } else if (tradePrice >= 10000) {
-      returnPrice = String.valueOf((Math.floor(krw * 0.1) / 0.1));
-      returnPrice = returnPrice.substring(0, returnPrice.indexOf("."));
-    } else if (tradePrice >= 1000) {
-      returnPrice = String.valueOf((Math.floor(krw)));
-      returnPrice = returnPrice.substring(0, returnPrice.indexOf("."));
-    } else if (tradePrice >= 100) {
-      returnPrice = String.valueOf((Math.floor(krw * 10) / 10));
-    } else if (tradePrice >= 10) {
-      returnPrice = String.valueOf((Math.floor(krw * 100) / 100));
-    } else if (tradePrice >= 1) {
-      returnPrice = String.valueOf((Math.floor(krw * 1000) / 1000));
-    } else if (tradePrice >= 0.1d) {
-      returnPrice = String.valueOf((Math.floor(krw * 10000) / 10000));
-    } else if (tradePrice >= 0.01d) {
-      returnPrice = String.valueOf((Math.floor(krw * 100000) / 100000));
-    } else if (tradePrice >= 0.001d) {
-      returnPrice = String.valueOf((Math.floor(krw * 1000000) / 1000000));
-    } else if (tradePrice >= 0.0001d) {
-      returnPrice = String.valueOf((Math.floor(krw * 1000000) / 10000000));
-    }
-
-    return returnPrice;
   }
 
 

@@ -5,12 +5,11 @@ import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
 import com.dopamine.api_call.model.response.quotation.order_book.OrderBook;
 import com.dopamine.common.service.CommonService;
+import com.dopamine.record.service.OrderRecordService;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +24,11 @@ public class AutoTrader {
 
   private final AccountService accountService;
   private final OrderService orderService;
+  private final OrderRecordService orderRecordService;
   private final QuotationService quotationService;
   private final CommonService commonService;
 
-  static Queue<String> exceptionCoin = new LinkedList<>();
+  static double firstKrw = 0d;
   public static StopWatch stopWatch = new StopWatch();
 
   @Scheduled(fixedDelay = 100)
@@ -37,24 +37,22 @@ public class AutoTrader {
 
     if (coinAccountList.size() == 0) {
       double krw = accountService.getKRWStatus();
-      log.info("현금보유량 : {}", krw);
+      if (firstKrw == 0d) {
+        firstKrw = krw;
+      }
       List<String> askCoinList = quotationService.getBidCoinList(krw);
+      if (askCoinList.isEmpty()) {
+        return;
+      }
       for (String market : askCoinList) {
-        if (exceptionCoin.contains(market)) {
-          continue;
-        }
-        if (exceptionCoin.size() > 3) {
-          exceptionCoin.poll();
-        }
+        log.info("현금보유량 : {}, 수익률 : {}", krw, (((krw / firstKrw) * 100) - 100));
 
         Order order = orderService.bidPriceCoin(market, krw * 0.999);
-
         if (order.isSuccess()) {
           log.info("[매수주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
           stopWatch.reset();
           stopWatch.start();
 
-          exceptionCoin.add(market);
           break;
         }
 
@@ -65,20 +63,18 @@ public class AutoTrader {
       double askTimeLimitSecond = Integer.parseInt(commonService.getConfig("ASK", "time_limit"));
 
       for (Accounts account : coinAccountList) {
-        if (!exceptionCoin.contains("KRW-" + account.getCurrency())) {
-          exceptionCoin.add("KRW-" + account.getCurrency());
-        }
 
         double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
         OrderBook currentPrice = QuotationRequestManager.getOrderBookList(
             List.of(account.getCurrency())).get(0);
         Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
-
         if (avgBuyPrice * askProfitRateValue < currentBidPrice) {
           Order order = orderService.askLimitCoin(account.getCurrency(),
               account.getBalance(), currentBidPrice);
           if (order.isSuccess()) {
-            log.info("[익절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(), order.getUuid());
+            log.info("[익절매도 주문완료] 코인명 : {}, 매도단가 : {}, 고유아이디 : {}", order.getMarket(),
+                currentBidPrice,
+                order.getUuid());
           }
 
         } else if (avgBuyPrice * askLossRateValue > currentBidPrice) {
@@ -96,7 +92,7 @@ public class AutoTrader {
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
           if (order.isSuccess()) {
-            log.info("[시간초과 손절매도 주문완료] 코인명 : {}, 고유아이디 : {}, 제한시간초 : {}", order.getMarket(),
+            log.info("[시간초과 매도 주문완료] 코인명 : {}, 고유아이디 : {}, 제한시간초 : {}", order.getMarket(),
                 order.getUuid(), askTimeLimitSecond);
             stopWatch.stop();
           }

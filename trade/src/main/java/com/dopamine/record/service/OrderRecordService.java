@@ -21,9 +21,9 @@ public class OrderRecordService {
   private final OrderDao orderDao;
   private final RecordDao recordDao;
 
-  public void addRecentOrderResult() {
+  public void addRecentOrderResult(Integer limit) {
     List<OrderHistoryGroupByMarket> orderHistoryGroupByMarket = orderDao.selectOrderHistoryGroupByMarket(
-        100);
+        limit);
 
     if (orderHistoryGroupByMarket.isEmpty()) {
       return;
@@ -32,7 +32,7 @@ public class OrderRecordService {
     for (OrderHistoryGroupByMarket order : orderHistoryGroupByMarket) {
       List<NumerousOrderStatus> numerousOrderStatuseList = OrderRequestManager.getNumerousOrderStatus(
           order.getMarket(), order.getUuidList(), null,
-          new OrderStatus[]{OrderStatus.CANCEL, OrderStatus.DONE}, 1, 100, OrderBy.DESC
+          new OrderStatus[]{OrderStatus.CANCEL, OrderStatus.DONE}, 1, limit, OrderBy.DESC
       );
 
       for (NumerousOrderStatus numerousOrderStatus : numerousOrderStatuseList) {
@@ -47,9 +47,14 @@ public class OrderRecordService {
               .mapToDouble(volume -> Double.parseDouble(volume.getVolume())).sum()));
         }
       }
-
-      recordDao.insertOrderResultList(numerousOrderStatuseList);
+      if (!numerousOrderStatuseList.isEmpty()) {
+        recordDao.insertOrderResultList(numerousOrderStatuseList);
+      }
     }
+  }
+
+  public NumerousOrderStatus getOrderResultByUuid(String uuid) {
+    return recordDao.selectOrderResultByUuid(uuid);
   }
 
 }

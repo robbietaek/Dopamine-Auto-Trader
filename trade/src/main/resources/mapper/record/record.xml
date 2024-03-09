@@ -71,5 +71,28 @@
       created_at DESC;
   </select>
 
+  <select id = "selectOrderResultByUuid" resultType="com.dopamine.api_call.model.response.order.numerous.NumerousOrderStatus">
+    SELECT
+      "uuid"
+      , side
+      , ord_type
+      , price
+      , state
+      , market
+      , created_at
+      , volume
+      , remaining_volume
+      , reserved_fee
+      , remaining_fee
+      , paid_fee
+      , "locked"
+      , executed_volume
+      , trades_count
+    FROM
+      tb_order_result
+    WHERE
+      "uuid" = {uuid}
+  </select>
+
 
 </mapper>

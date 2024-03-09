@@ -13,4 +13,6 @@ public interface RecordDao {
 
   List<NumerousOrderStatus> selectOrderResultListByState(@Param("state") String state);
 
+  NumerousOrderStatus selectOrderResultByUuid(@Param("uuid") String uuid);
+
 }

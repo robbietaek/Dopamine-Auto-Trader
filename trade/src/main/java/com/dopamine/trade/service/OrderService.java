@@ -25,6 +25,15 @@ public class OrderService {
     return order;
   }
 
+  public Order bidLimitCoin(String market, String volume, double price) {
+
+    Order order = OrderRequestManager.orderCoin(market, Side.BID, volume, price, OrderType.LIMIT);
+    if (order.isSuccess()) {
+      orderDao.insertOrderInformation(order);
+    }
+    return order;
+  }
+
   public Order askMarketCoin(String market, String volume) {
     Order order = OrderRequestManager.orderCoin(market, Side.ASK, volume, 0, OrderType.MARKET);
     if (order.isSuccess()) {
@@ -33,7 +42,7 @@ public class OrderService {
     return order;
   }
 
-  public Order askLimitCoin(String market, String volume, Double price) {
+  public Order askLimitCoin(String market, String volume, double price) {
     Order order = OrderRequestManager.orderCoin(market, Side.ASK, volume, price, OrderType.LIMIT);
     if (order.isSuccess()) {
       orderDao.insertOrderInformation(order);

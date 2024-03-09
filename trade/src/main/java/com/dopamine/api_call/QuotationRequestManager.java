@@ -1,5 +1,6 @@
 package com.dopamine.api_call;
 
+import com.dopamine.api_call.model.response.quotation.candles.minute.Minute;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
 import com.dopamine.api_call.model.response.quotation.order_book.OrderBook;
@@ -117,6 +118,37 @@ public final class QuotationRequestManager {
     }
 
     return orderBookList;
+  }
+
+  public static List<Minute> getMinuteCandleList(String market, String count) {
+    OkHttpClient client = new OkHttpClient();
+
+    ArrayList<String> queryElements = new ArrayList<>();
+    if (market.startsWith("KRW-")) {
+      queryElements.add("market=" + market);
+    } else {
+      queryElements.add("market=KRW-" + market);
+    }
+    queryElements.add("count=" + count);
+
+    String queryString = String.join("&", queryElements.toArray(new String[0]));
+
+    Request request = new Request.Builder()
+        .url(serverUrl + "/v1/candles/minutes/1?" + queryString)
+        .get()
+        .addHeader("accept", "application/json")
+        .build();
+    List<Minute> minuteCancleList = new ArrayList<>();
+    try {
+      Response response = client.newCall(request).execute();
+      minuteCancleList = objectMapper.readValue(response.body().string(),
+          new TypeReference<List<Minute>>() {
+          });
+      Thread.sleep(50);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return minuteCancleList;
   }
 
 }
