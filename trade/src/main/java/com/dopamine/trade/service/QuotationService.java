@@ -73,7 +73,7 @@ public class QuotationService {
       }
 
       List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "3");
+          currentPrice.getMarket(), "4");
 
       double tradePrice = 0d;
       boolean pass = true;
@@ -83,7 +83,7 @@ public class QuotationService {
           continue;
         }
 
-        if (tradePrice >= minute.getTradePrice()) {
+        if (tradePrice <= minute.getTradePrice()) {
           tradePrice = minute.getTradePrice();
         } else {
           pass = false;

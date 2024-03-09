@@ -72,9 +72,10 @@ public class AutoTrader {
           Order order = orderService.askLimitCoin(account.getCurrency(),
               account.getBalance(), currentBidPrice);
           if (order.isSuccess()) {
-            log.info("[익절매도 주문완료] 코인명 : {}, 매도단가 : {}, 고유아이디 : {}", order.getMarket(),
+            log.info("[익절매도 주문완료] 코인명 : {}, 매수단가 : {}, 매도단가 : {}, 설정 수익률 : {}", order.getMarket(),
+                avgBuyPrice,
                 currentBidPrice,
-                order.getUuid());
+                askProfitRateValue);
           }
 
         } else if (avgBuyPrice * askLossRateValue > currentBidPrice) {
@@ -82,8 +83,7 @@ public class AutoTrader {
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
           if (order.isSuccess()) {
-            log.info("[손절매도 주문완료] 코인명 : {}, 고유아이디 : {}", order.getMarket(),
-                order.getUuid());
+            log.info("[손절매도 주문완료] 코인명 : {}, 설정 손절률 : {}", order.getMarket(), askLossRateValue);
             stopWatch.stop();
           }
 
@@ -92,8 +92,7 @@ public class AutoTrader {
           Order order = orderService.askMarketCoin(account.getCurrency(),
               account.getBalance());
           if (order.isSuccess()) {
-            log.info("[시간초과 매도 주문완료] 코인명 : {}, 고유아이디 : {}, 제한시간초 : {}", order.getMarket(),
-                order.getUuid(), askTimeLimitSecond);
+            log.info("[시간초과 매도 주문완료] 코인명 : {}, 제한시간초 : {}", order.getMarket(), askTimeLimitSecond);
             stopWatch.stop();
           }
         }
