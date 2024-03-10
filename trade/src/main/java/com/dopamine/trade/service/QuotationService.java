@@ -42,7 +42,7 @@ public class QuotationService {
         .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed()).toList();
     bidCoinList.clear();
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
-    
+
     for (CurrentPrice currentPrice : currentPriceList) {
 
       if (currentPrice.getTradePrice() > 1000000d) {
@@ -54,7 +54,7 @@ public class QuotationService {
       }
 
       List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "3");
+          currentPrice.getMarket(), "4");
 
       double tradePrice = 0d;
       boolean pass = true;
@@ -64,7 +64,7 @@ public class QuotationService {
           continue;
         }
 
-        if (tradePrice > minute.getTradePrice()) {
+        if (tradePrice < minute.getTradePrice()) {
           tradePrice = minute.getTradePrice();
         } else {
           pass = false;

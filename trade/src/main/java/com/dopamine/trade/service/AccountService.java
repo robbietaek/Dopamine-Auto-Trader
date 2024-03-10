@@ -12,9 +12,8 @@ public class AccountService {
   public double getKRWStatus() {
     List<Accounts> accounts = AccountRequestManager.getAccounts();
     double krw = 0d;
-
     for (Accounts account : accounts) {
-      if (account.getCurrency().equals("KRW")) {
+      if (account.getCurrency().equals("KRW-KRW")) {
         krw = Double.parseDouble(account.getBalance());
         break;
       }
@@ -27,7 +26,7 @@ public class AccountService {
     List<Accounts> accounts = AccountRequestManager.getAccounts();
     List<Accounts> coinAccountList = new ArrayList<>();
     for (Accounts account : accounts) {
-      if (!account.getCurrency().equals("KRW")) {
+      if (!account.getCurrency().equals("KRW-KRW")) {
         coinAccountList.add(account);
       }
     }

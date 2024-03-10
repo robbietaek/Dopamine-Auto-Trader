@@ -12,8 +12,10 @@ import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -26,10 +28,10 @@ public class AskTrader {
   private final OrderService orderService;
   private final CommonService commonService;
 
-  @Scheduled(fixedDelay = 334)
+  @Async
+  @Scheduled(fixedRate = 400)
   public void askTrader() {
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
-
     if (coinAccountList.size() == 0) {
       return;
     }
@@ -37,10 +39,16 @@ public class AskTrader {
     double askProfitRateValue = Double.parseDouble(commonService.getConfig("ASK", "profit_rate"));
     double askLossRateValue = Double.parseDouble(commonService.getConfig("ASK", "loss_rate"));
     int askTimeoutLimitValue = Integer.parseInt(commonService.getConfig("ASK", "time_limit"));
+
+    List<OrderBook> currentPriceList = QuotationRequestManager.getOrderBookList(
+        coinAccountList.stream().map(Accounts::getCurrency).collect(
+            Collectors.toList()));
+
     for (Accounts account : coinAccountList) {
       double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
-      OrderBook currentPrice = QuotationRequestManager.getOrderBookList(
-          List.of(account.getCurrency())).get(0);
+      OrderBook currentPrice = currentPriceList.stream()
+          .filter(a -> a.getMarket().equals(account.getCurrency()))
+          .collect(Collectors.toList()).get(0);
       Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
 
       if (avgBuyPrice * askProfitRateValue < currentBidPrice) {
@@ -52,8 +60,8 @@ public class AskTrader {
               currentBidPrice,
               askProfitRateValue);
 
-          if (!exceptCoinQueue.contains("KRW-" + account.getCurrency())) {
-            exceptCoinQueue.add("KRW-" + account.getCurrency());
+          if (!exceptCoinQueue.contains(account.getCurrency())) {
+            exceptCoinQueue.add(account.getCurrency());
           }
         }
 
@@ -62,25 +70,28 @@ public class AskTrader {
             account.getBalance());
         if (order.isSuccess()) {
           log.info("[손절매도] 코인명 : {}, 설정 손절률 : {}", order.getMarket(), askLossRateValue);
-          if (!exceptCoinQueue.contains("KRW-" + account.getCurrency())) {
-            exceptCoinQueue.add("KRW-" + account.getCurrency());
+          if (!exceptCoinQueue.contains(account.getCurrency())) {
+            exceptCoinQueue.add(account.getCurrency());
           }
         }
 
-      } else if (orderService.getLastOrder("KRW-" + account.getCurrency(),
+      } else if (orderService.getLastOrder(account.getCurrency(),
               OrderSide.BID.getValue()).getOrderTime().plusSeconds(askTimeoutLimitValue)
           .isBefore(LocalDateTime.now())) {
 
         // 관련하여 모든 주문 취소
-        orderService.cancelOrder(orderService.getLastOrder("KRW-" + account.getCurrency(),
-            OrderSide.ASK.getValue()).getUuid());
+        if (orderService.getLastOrder(account.getCurrency(),
+            OrderSide.ASK.getValue()) != null) {
+          orderService.cancelOrder(orderService.getLastOrder(account.getCurrency(),
+              OrderSide.ASK.getValue()).getUuid());
+        }
 
         Order order = orderService.askMarketCoin(account.getCurrency(),
             account.getBalance());
         if (order.isSuccess()) {
           log.info("[시간초과] 코인명 : {}, 설정 초과시간(초) : {}", order.getMarket(), askTimeoutLimitValue);
-          if (!exceptCoinQueue.contains("KRW-" + account.getCurrency())) {
-            exceptCoinQueue.add("KRW-" + account.getCurrency());
+          if (!exceptCoinQueue.contains(account.getCurrency())) {
+            exceptCoinQueue.add(account.getCurrency());
           }
         }
 

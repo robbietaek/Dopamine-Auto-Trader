@@ -9,6 +9,7 @@ import com.dopamine.trade.service.QuotationService;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,7 +27,7 @@ public class BidTrader {
 
   public static Queue<String> exceptCoinQueue = new LinkedList();
 
-  @Scheduled(fixedDelay = 1000)
+  @Scheduled(cron = "*/3 * * * * *")
   public void bidTrader() {
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
     int coinOwnCount = coinAccountList.size();
@@ -39,7 +40,9 @@ public class BidTrader {
       }
 
       for (String market : askCoinList) {
-        if (exceptCoinQueue.contains(market)) {
+        if (exceptCoinQueue.contains(market)
+            || coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
+            .contains(market)) {
           continue;
         }
 

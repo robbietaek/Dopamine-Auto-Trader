@@ -40,4 +40,7 @@ public class Accounts implements Serializable {
   @JsonProperty("unit_currency")
   private String unitCurrency;
 
+  public String getCurrency() {
+    return "KRW-" + currency;
+  }
 }

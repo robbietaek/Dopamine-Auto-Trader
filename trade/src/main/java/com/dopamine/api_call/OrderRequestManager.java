@@ -75,7 +75,6 @@ public final class OrderRequestManager {
       orderAvailable = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"),
           OrderAvailable.class);
     } catch (IOException e) {
-      e.printStackTrace();
     }
 
     return orderAvailable;
@@ -105,7 +104,6 @@ public final class OrderRequestManager {
       individualOrderStatus = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"),
           IndividualOrderStatus.class);
     } catch (IOException e) {
-      e.printStackTrace();
     }
     return individualOrderStatus;
   }
@@ -149,7 +147,6 @@ public final class OrderRequestManager {
           new TypeReference<List<NumerousOrderStatus>>() {
           });
     } catch (IOException e) {
-      e.printStackTrace();
     }
 
     return numerousOrderStatus;
@@ -160,11 +157,7 @@ public final class OrderRequestManager {
 
     HashMap<String, String> params = new HashMap<>();
     //코인명
-    if (market.startsWith("KRW-")) {
-      params.put("market", market);
-    } else {
-      params.put("market", "KRW-" + market);
-    }
+    params.put("market", market);
 
     //매수 bid, 매도 ask
     params.put("side", side.getValue());
@@ -211,9 +204,10 @@ public final class OrderRequestManager {
       HttpResponse response = client.execute(request);
       HttpEntity entity = response.getEntity();
       order = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Order.class);
-      Thread.sleep(2000);
+      if (side.equals(OrderSide.BID)) {
+        Thread.sleep(2000);
+      }
     } catch (Exception e) {
-      e.printStackTrace();
     }
 
     return order;
@@ -243,7 +237,6 @@ public final class OrderRequestManager {
 
       cancel = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Cancel.class);
     } catch (IOException e) {
-      e.printStackTrace();
     }
 
     return cancel;

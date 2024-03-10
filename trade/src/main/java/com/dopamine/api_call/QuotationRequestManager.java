@@ -38,7 +38,6 @@ public final class QuotationRequestManager {
           new TypeReference<List<MarketCode>>() {
           });
     } catch (Exception e) {
-      e.printStackTrace();
     }
 
     return marketCodeList;
@@ -54,11 +53,7 @@ public final class QuotationRequestManager {
 
     ArrayList<String> queryElements = new ArrayList<>();
     for (String market : markets) {
-      if (market.startsWith("KRW-")) {
-        queryElements.add("markets=" + market);
-      } else {
-        queryElements.add("markets=KRW-" + market);
-      }
+      queryElements.add("markets=" + market);
     }
     String queryString = String.join("&", queryElements.toArray(new String[0]));
 
@@ -74,7 +69,6 @@ public final class QuotationRequestManager {
           new TypeReference<List<CurrentPrice>>() {
           });
     } catch (Exception e) {
-      e.printStackTrace();
     }
 
     return currentPrice;
@@ -94,11 +88,7 @@ public final class QuotationRequestManager {
 
     ArrayList<String> queryElements = new ArrayList<>();
     for (String market : markets) {
-      if (market.startsWith("KRW-")) {
-        queryElements.add("markets=" + market);
-      } else {
-        queryElements.add("markets=KRW-" + market);
-      }
+      queryElements.add("markets=" + market);
     }
     String queryString = String.join("&", queryElements.toArray(new String[0]));
 
@@ -114,7 +104,6 @@ public final class QuotationRequestManager {
           new TypeReference<List<OrderBook>>() {
           });
     } catch (Exception e) {
-      e.printStackTrace();
     }
 
     return orderBookList;
@@ -124,11 +113,7 @@ public final class QuotationRequestManager {
     OkHttpClient client = new OkHttpClient();
 
     ArrayList<String> queryElements = new ArrayList<>();
-    if (market.startsWith("KRW-")) {
-      queryElements.add("market=" + market);
-    } else {
-      queryElements.add("market=KRW-" + market);
-    }
+    queryElements.add("market=" + market);
     queryElements.add("count=" + count);
 
     String queryString = String.join("&", queryElements.toArray(new String[0]));
@@ -146,7 +131,6 @@ public final class QuotationRequestManager {
           });
       Thread.sleep(50);
     } catch (Exception e) {
-      e.printStackTrace();
     }
     return minuteCancleList;
   }

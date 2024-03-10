@@ -53,7 +53,6 @@ public final class AccountRequestManager {
           });
 
     } catch (IOException e) {
-      e.printStackTrace();
     }
 
     return accounts;
