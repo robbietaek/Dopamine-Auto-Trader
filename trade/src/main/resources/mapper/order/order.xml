@@ -11,6 +11,7 @@
       , order_side
       , order_type
       , market
+      , price
       , order_time
       , profit_rate
       , loss_rate
@@ -22,6 +23,7 @@
       , #{order.side}
       , #{order.ordType}
       , #{order.market}
+      , #{order.price}
       , NOW()
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'profit_rate')
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'loss_rate')
@@ -29,7 +31,7 @@
     )
   </insert>
 
-  <select id="selectOrderHistory" resultType="com.dopamine.trade.model.OrderHistory">
+  <select id="selectLastOrderHistory" resultType="com.dopamine.trade.model.OrderHistory">
     SELECT
       uuid
       , order_side
@@ -41,10 +43,13 @@
       , time_limit
     FROM
       tb_coin_order_history
+    WHERE
+      market = #{market}
+    AND
+      order_side = #{orderSide}
     ORDER BY
       order_time DESC
-    LIMIT
-      #{limit}
+    LIMIT 1
   </select>
 
   <select id="selectOrderHistoryGroupByMarket" resultType="com.dopamine.trade.model.OrderHistoryGroupByMarket">

@@ -3,9 +3,10 @@ package com.dopamine.trade.service;
 import com.dopamine.api_call.OrderRequestManager;
 import com.dopamine.api_call.model.response.order.cancel.Cancel;
 import com.dopamine.api_call.model.response.order.order.Order;
+import com.dopamine.api_call.type.OrderSide;
 import com.dopamine.api_call.type.OrderType;
-import com.dopamine.api_call.type.Side;
 import com.dopamine.trade.dao.OrderDao;
+import com.dopamine.trade.model.OrderHistory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,8 @@ public class OrderService {
   private final OrderDao orderDao;
 
   public Order bidPriceCoin(String market, double price) {
-    Order order = OrderRequestManager.orderCoin(market, Side.BID, null, price, OrderType.PRICE);
+    Order order = OrderRequestManager.orderCoin(market, OrderSide.BID, null, price,
+        OrderType.PRICE);
     if (order.isSuccess()) {
       orderDao.insertOrderInformation(order);
     }
@@ -27,7 +29,8 @@ public class OrderService {
 
   public Order bidLimitCoin(String market, String volume, double price) {
 
-    Order order = OrderRequestManager.orderCoin(market, Side.BID, volume, price, OrderType.LIMIT);
+    Order order = OrderRequestManager.orderCoin(market, OrderSide.BID, volume, price,
+        OrderType.LIMIT);
     if (order.isSuccess()) {
       orderDao.insertOrderInformation(order);
     }
@@ -35,7 +38,7 @@ public class OrderService {
   }
 
   public Order askMarketCoin(String market, String volume) {
-    Order order = OrderRequestManager.orderCoin(market, Side.ASK, volume, 0, OrderType.MARKET);
+    Order order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, 0, OrderType.MARKET);
     if (order.isSuccess()) {
       orderDao.insertOrderInformation(order);
     }
@@ -43,7 +46,8 @@ public class OrderService {
   }
 
   public Order askLimitCoin(String market, String volume, double price) {
-    Order order = OrderRequestManager.orderCoin(market, Side.ASK, volume, price, OrderType.LIMIT);
+    Order order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, price,
+        OrderType.LIMIT);
     if (order.isSuccess()) {
       orderDao.insertOrderInformation(order);
     }
@@ -63,8 +67,8 @@ public class OrderService {
     return cancel;
   }
 
-  public String getLastOrderUuid() {
-    return orderDao.selectOrderHistory(1).get(0).getUuid();
+  public OrderHistory getLastOrder(String market, String orderSide) {
+    return orderDao.selectLastOrderHistory(market, orderSide);
   }
 
 }

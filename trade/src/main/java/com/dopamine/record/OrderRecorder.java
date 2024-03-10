@@ -13,7 +13,7 @@ public class OrderRecorder {
 
   @Scheduled(cron = "*/5 * * * * *")
   public void recordOrderInformation() {
-    orderRecordService.addRecentOrderResult(5);
+    orderRecordService.addRecentOrderResult(20);
   }
 
 

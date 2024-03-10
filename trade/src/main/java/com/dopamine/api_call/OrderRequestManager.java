@@ -6,9 +6,9 @@ import com.dopamine.api_call.model.response.order.individual.IndividualOrderStat
 import com.dopamine.api_call.model.response.order.numerous.NumerousOrderStatus;
 import com.dopamine.api_call.model.response.order.order.Order;
 import com.dopamine.api_call.type.OrderBy;
+import com.dopamine.api_call.type.OrderSide;
 import com.dopamine.api_call.type.OrderStatus;
 import com.dopamine.api_call.type.OrderType;
-import com.dopamine.api_call.type.Side;
 import com.dopamine.tool.CalcUnit;
 import com.dopamine.tool.JwtTokenManager;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -155,7 +155,7 @@ public final class OrderRequestManager {
     return numerousOrderStatus;
   }
 
-  public static Order orderCoin(String market, Side side, String volume, double price,
+  public static Order orderCoin(String market, OrderSide side, String volume, double price,
       OrderType ordType) {
 
     HashMap<String, String> params = new HashMap<>();
@@ -178,7 +178,7 @@ public final class OrderRequestManager {
       params.put("price", CalcUnit.exchangePriceVolumeUnit(market, price).get("price"));
     }
     //지정가 주문(매수)
-    else if (ordType.equals(OrderType.LIMIT) && side.equals(Side.BID)) {
+    else if (ordType.equals(OrderType.LIMIT) && side.equals(OrderSide.BID)) {
       params.put("price", String.valueOf(price));
       params.put("volume", volume);
     }
@@ -188,7 +188,7 @@ public final class OrderRequestManager {
       params.put("volume", volume);
     }
     //지정가 주문(매도)
-    else if (ordType.equals(OrderType.LIMIT) && side.equals(Side.ASK)) {
+    else if (ordType.equals(OrderType.LIMIT) && side.equals(OrderSide.ASK)) {
       params.put("price", String.valueOf(price));
       params.put("volume", volume);
     }
@@ -211,7 +211,8 @@ public final class OrderRequestManager {
       HttpResponse response = client.execute(request);
       HttpEntity entity = response.getEntity();
       order = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Order.class);
-    } catch (IOException e) {
+      Thread.sleep(2000);
+    } catch (Exception e) {
       e.printStackTrace();
     }
 

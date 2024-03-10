@@ -26,30 +26,6 @@ public class QuotationService {
     List<String> bidCoinList = new LinkedList<>();
 
     for (MarketCode marketCode : marketCodeList) {
-
-      //가격 급등락
-      boolean priceFluctuations = marketCode.getMarketEvent().getCaution().isPriceFluctuations();
-//      boolean priceFluctuationsOption = Boolean.parseBoolean(
-//          commonService.getConfig("BID", "priceFluctuations"));
-
-      //거래량 급등
-      boolean tradingVolumeSoaring = marketCode.getMarketEvent().getCaution()
-          .isTradingVolumeSoaring();
-//      boolean tradingVolumeSoaringOption = Boolean.parseBoolean(
-//          commonService.getConfig("BID", "tradingVolumeSoaring"));
-
-      //입금량 급등락
-      boolean depositAmountSoaring = marketCode.getMarketEvent().getCaution()
-          .isDepositAmountSoaring();
-//      boolean depositAmountSoaringOption = Boolean.parseBoolean(
-//          commonService.getConfig("BID", "depositAmountSoaring"));
-
-      //해외와 가격차이 경보
-      boolean globalPricedifferences = marketCode.getMarketEvent().getCaution()
-          .isGlobalPricedifferences();
-//      boolean globalPricedifferencesOption = Boolean.parseBoolean(
-//          commonService.getConfig("BID", "globalPricedifferences"));
-
       //소수 계정에 집중되어있음
       boolean concentrationOfSmallAccounts = marketCode.getMarketEvent().getCaution()
           .isConcentrationOfSmallAccounts();
@@ -65,15 +41,20 @@ public class QuotationService {
             bidCoinList).stream().filter(a -> a.getChange().equals("RISE"))
         .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed()).toList();
     bidCoinList.clear();
-
+    int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
+    
     for (CurrentPrice currentPrice : currentPriceList) {
 
-      if (bidCoinList.size() > 0) {
+      if (currentPrice.getTradePrice() > 1000000d) {
+        continue;
+      }
+
+      if (bidCoinList.size() > coinOwnLimit * 3) {
         break;
       }
 
       List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "4");
+          currentPrice.getMarket(), "3");
 
       double tradePrice = 0d;
       boolean pass = true;
@@ -83,7 +64,7 @@ public class QuotationService {
           continue;
         }
 
-        if (tradePrice <= minute.getTradePrice()) {
+        if (tradePrice > minute.getTradePrice()) {
           tradePrice = minute.getTradePrice();
         } else {
           pass = false;
@@ -97,7 +78,6 @@ public class QuotationService {
 
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
           currentPrice.getMarket());
-
       if (Double.parseDouble(orderAvailable.getBidFee()) > 0.0005d
           || Double.parseDouble(orderAvailable.getAskFee()) > 0.0005d) {
         continue;

@@ -12,7 +12,8 @@ public interface OrderDao {
 
   void insertOrderInformation(@Param("order") Order order);
 
-  List<OrderHistory> selectOrderHistory(@Param("limit") Integer limit);
+  OrderHistory selectLastOrderHistory(@Param("market") String market,
+      @Param("orderSide") String orderSide);
 
   List<OrderHistoryGroupByMarket> selectOrderHistoryGroupByMarket(@Param("limit") Integer limit);
 

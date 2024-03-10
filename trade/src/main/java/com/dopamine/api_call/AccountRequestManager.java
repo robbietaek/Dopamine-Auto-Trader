@@ -1,7 +1,7 @@
 package com.dopamine.api_call;
 
-import com.dopamine.tool.JwtTokenManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
+import com.dopamine.tool.JwtTokenManager;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;

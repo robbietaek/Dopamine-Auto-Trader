@@ -27,11 +27,8 @@ public class AccountService {
     List<Accounts> accounts = AccountRequestManager.getAccounts();
     List<Accounts> coinAccountList = new ArrayList<>();
     for (Accounts account : accounts) {
-      if (!account.getCurrency().equals("KRW")
-          || Double.parseDouble(account.getAvgBuyPrice()) * Double.parseDouble(account.getBalance())
-          > 50d) {
+      if (!account.getCurrency().equals("KRW")) {
         coinAccountList.add(account);
-        break;
       }
     }
     return coinAccountList;

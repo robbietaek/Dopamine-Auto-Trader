@@ -1,12 +1,12 @@
 package com.dopamine.api_call.type;
 
-public enum Side {
+public enum OrderSide {
   BID("bid"),
   ASK("ask");
 
   private final String value;
 
-  Side(String value) {
+  OrderSide(String value) {
     this.value = value;
   }
 
