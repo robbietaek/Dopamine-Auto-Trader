@@ -29,7 +29,7 @@ public class AskTrader {
   private final CommonService commonService;
 
   @Async
-  @Scheduled(fixedRate = 400)
+  @Scheduled(fixedRate = 500)
   public void askTrader() {
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
     if (coinAccountList.size() == 0) {
@@ -43,6 +43,10 @@ public class AskTrader {
     List<OrderBook> currentPriceList = QuotationRequestManager.getOrderBookList(
         coinAccountList.stream().map(Accounts::getCurrency).collect(
             Collectors.toList()));
+
+    if (currentPriceList.isEmpty()) {
+      return;
+    }
 
     for (Accounts account : coinAccountList) {
       double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());

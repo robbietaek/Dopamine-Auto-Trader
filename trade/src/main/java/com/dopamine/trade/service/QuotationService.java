@@ -64,7 +64,7 @@ public class QuotationService {
           continue;
         }
 
-        if (tradePrice < minute.getTradePrice()) {
+        if (tradePrice >= minute.getTradePrice()) {
           tradePrice = minute.getTradePrice();
         } else {
           pass = false;
