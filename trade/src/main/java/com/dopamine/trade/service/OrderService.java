@@ -57,12 +57,7 @@ public class OrderService {
   public Cancel cancelOrder(String market) {
     Cancel cancel = OrderRequestManager.cancelOrder(market);
     if (cancel.isSuccess()) {
-      Order order = new Order();
-      order.setUuid(cancel.getUuid());
-      order.setSide(cancel.getSide());
-      order.setOrdType(cancel.getOrdType());
-      order.setMarket(cancel.getMarket());
-      orderDao.insertOrderInformation(order);
+      orderDao.updateOrderCancel(cancel.getUuid());
     }
     return cancel;
   }

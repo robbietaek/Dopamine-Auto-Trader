@@ -31,6 +31,15 @@
     )
   </insert>
 
+  <update id="updateOrderCancel" parameterType="String">
+    UPDATE
+      tb_coin_order_history
+    SET
+      order_cancel = true
+    WHERE
+      "uuid" = #{uuid}
+  </update>
+
   <select id="selectLastOrderHistory" resultType="com.dopamine.trade.model.OrderHistory">
     SELECT
       uuid
@@ -41,6 +50,7 @@
       , profit_rate
       , loss_rate
       , time_limit
+      , order_cancel
     FROM
       tb_coin_order_history
     WHERE

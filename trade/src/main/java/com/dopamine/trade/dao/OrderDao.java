@@ -12,6 +12,8 @@ public interface OrderDao {
 
   void insertOrderInformation(@Param("order") Order order);
 
+  void updateOrderCancel(@Param("uuid") String uuid);
+
   OrderHistory selectLastOrderHistory(@Param("market") String market,
       @Param("orderSide") String orderSide);
 

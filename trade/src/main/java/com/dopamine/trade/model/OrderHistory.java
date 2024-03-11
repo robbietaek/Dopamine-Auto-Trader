@@ -19,5 +19,6 @@ public class OrderHistory implements Serializable {
   private String profitRate;
   private String lossRate;
   private String timeLimit;
+  private boolean orderCancel;
 
 }

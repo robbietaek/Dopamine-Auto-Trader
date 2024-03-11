@@ -54,7 +54,7 @@ public class QuotationService {
       }
 
       List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "4");
+          currentPrice.getMarket(), "2");
 
       double tradePrice = 0d;
       boolean pass = true;

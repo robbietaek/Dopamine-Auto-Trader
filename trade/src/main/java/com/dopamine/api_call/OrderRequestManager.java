@@ -204,9 +204,6 @@ public final class OrderRequestManager {
       HttpResponse response = client.execute(request);
       HttpEntity entity = response.getEntity();
       order = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Order.class);
-      if (side.equals(OrderSide.BID)) {
-        Thread.sleep(2000);
-      }
     } catch (Exception e) {
     }
 
