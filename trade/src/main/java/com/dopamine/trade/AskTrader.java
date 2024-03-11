@@ -69,8 +69,12 @@ public class AskTrader {
       Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
       if (avgBuyPrice * askLossRateValue > currentBidPrice) {
         orderService.cancelOrder(askOrderHistory.getUuid());
-
-        Order order = orderService.askMarketCoin(account.getCurrency(), account.getLocked());
+        Order order = new Order();
+        if (Double.valueOf(account.getBalance()) > 0d) {
+          order = orderService.askMarketCoin(account.getCurrency(), account.getBalance());
+        } else {
+          order = orderService.askMarketCoin(account.getCurrency(), account.getLocked());
+        }
         if (order.isSuccess()) {
           log.info("[손절매도] 코인명 : {}, 설정 손절률 : {}", order.getMarket(), askLossRateValue);
           if (!exceptCoin.contains(account.getCurrency())) {
@@ -80,10 +84,14 @@ public class AskTrader {
 
       } else if (bidTime.isBefore(LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
         orderService.cancelOrder(askOrderHistory.getUuid());
-        System.out.println(account.getBalance());
 
-        Order order = orderService.askMarketCoin(account.getCurrency(),
-            account.getLocked());
+        Order order = new Order();
+        if (Double.valueOf(account.getBalance()) > 0d) {
+          order = orderService.askMarketCoin(account.getCurrency(), account.getBalance());
+        } else {
+          order = orderService.askMarketCoin(account.getCurrency(), account.getLocked());
+        }
+
         if (order.isSuccess()) {
           log.info("[시간초과] 코인명 : {}, 설정 초과시간(초) : {}", order.getMarket(), askTimeoutLimitValue);
           if (!exceptCoin.contains(account.getCurrency())) {

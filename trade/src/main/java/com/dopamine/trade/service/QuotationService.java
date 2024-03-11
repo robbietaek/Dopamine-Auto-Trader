@@ -3,7 +3,6 @@ package com.dopamine.trade.service;
 import com.dopamine.api_call.OrderRequestManager;
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.order.available.OrderAvailable;
-import com.dopamine.api_call.model.response.quotation.candles.minute.Minute;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
 import com.dopamine.common.service.CommonService;
@@ -38,13 +37,12 @@ public class QuotationService {
     }
 
     List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
-            bidCoinList).stream().filter(a -> a.getChange().equals("EVEN"))
-        .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed()).toList();
+            bidCoinList).stream().filter(a -> a.getChange().equals("RISE"))
+        .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate)).toList();
     bidCoinList.clear();
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
 
     for (CurrentPrice currentPrice : currentPriceList) {
-
       if (currentPrice.getTradePrice() > 1000000d) {
         continue;
       }

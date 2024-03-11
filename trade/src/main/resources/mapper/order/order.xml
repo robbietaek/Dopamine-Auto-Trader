@@ -95,7 +95,7 @@
     AND
       ask_order = false
     AND
-      (NOW() - interval'5 seconds') > order_time
+      (NOW() - interval'3 seconds') > order_time
     ORDER BY
       order_time ASC
   </select>
