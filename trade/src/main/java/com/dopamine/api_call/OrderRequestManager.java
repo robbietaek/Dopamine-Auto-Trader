@@ -233,7 +233,7 @@ public final class OrderRequestManager {
       HttpEntity entity = response.getEntity();
 
       cancel = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Cancel.class);
-    } catch (IOException e) {
+    } catch (Exception e) {
     }
 
     return cancel;

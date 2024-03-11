@@ -1,22 +1,17 @@
 package com.dopamine.trade;
 
-import com.dopamine.api_call.AccountRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
 import com.dopamine.common.service.CommonService;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +28,7 @@ public class BidTrader {
   public static Queue<String> exceptCoin = new LinkedList<>();
 
 
-  @Async
-  @Scheduled(fixedRate = 1691)
+  @Scheduled(fixedDelay = 2383)
   public void bidTrader() {
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
     int coinOwnCount = coinAccountList.size();
@@ -67,7 +61,6 @@ public class BidTrader {
           }
 
         }
-
         if (coinOwnCount == coinOwnLimit) {
           break;
         }
