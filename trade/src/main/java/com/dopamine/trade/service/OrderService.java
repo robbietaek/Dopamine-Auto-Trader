@@ -7,6 +7,7 @@ import com.dopamine.api_call.type.OrderSide;
 import com.dopamine.api_call.type.OrderType;
 import com.dopamine.trade.dao.OrderDao;
 import com.dopamine.trade.model.OrderHistory;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,11 +46,12 @@ public class OrderService {
     return order;
   }
 
-  public Order askLimitCoin(String market, String volume, double price) {
+  public Order askLimitCoin(String market, String volume, double price, String historyUuid) {
     Order order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, price,
         OrderType.LIMIT);
     if (order.isSuccess()) {
       orderDao.insertOrderInformation(order);
+      orderDao.updateAskOrder(historyUuid);
     }
     return order;
   }
@@ -57,13 +59,17 @@ public class OrderService {
   public Cancel cancelOrder(String uuid) {
     Cancel cancel = OrderRequestManager.cancelOrder(uuid);
     if (cancel.isSuccess()) {
-      orderDao.updateOrderCancel(cancel.getUuid());
+      orderDao.updateOrderCancel(uuid);
     }
     return cancel;
   }
 
-  public OrderHistory getLastOrder(String market, String orderSide) {
-    return orderDao.selectLastOrderHistory(market, orderSide);
+  public OrderHistory getLastOrder(String market, String orderSide, String orderType) {
+    return orderDao.selectLastOrderHistory(market, orderSide, orderType);
+  }
+
+  public List<OrderHistory> getAskTargetCoin() {
+    return orderDao.selectAskTargetCoin();
   }
 
 }

@@ -38,7 +38,7 @@ public class QuotationService {
     }
 
     List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
-            bidCoinList).stream().filter(a -> a.getChange().equals("RISE"))
+            bidCoinList).stream().filter(a -> a.getChange().equals("EVEN"))
         .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed()).toList();
     bidCoinList.clear();
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));

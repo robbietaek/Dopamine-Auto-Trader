@@ -32,7 +32,6 @@ public class BidTrader {
 
   public static Queue<String> exceptCoin = new LinkedList<>();
 
-  public static Map<String, String> bidList = new HashMap<>();
 
   @Async
   @Scheduled(fixedRate = 1691)
@@ -56,7 +55,6 @@ public class BidTrader {
         Order order = orderService.bidPriceCoin(market,
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         if (order.isSuccess()) {
-          bidList.put(order.getMarket(), order.getUuid());
           coinOwnCount++;
           krw = accountService.getKRWStatus();
 

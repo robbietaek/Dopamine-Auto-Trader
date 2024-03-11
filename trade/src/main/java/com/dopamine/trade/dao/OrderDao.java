@@ -12,10 +12,14 @@ public interface OrderDao {
 
   void insertOrderInformation(@Param("order") Order order);
 
+  void updateAskOrder(@Param("uuid") String uuid);
+
   void updateOrderCancel(@Param("uuid") String uuid);
 
   OrderHistory selectLastOrderHistory(@Param("market") String market,
-      @Param("orderSide") String orderSide);
+      @Param("orderSide") String orderSide, @Param("orderType") String orderType);
+
+  List<OrderHistory> selectAskTargetCoin();
 
   List<OrderHistoryGroupByMarket> selectOrderHistoryGroupByMarket(@Param("limit") Integer limit);
 

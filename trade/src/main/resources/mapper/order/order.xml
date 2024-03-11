@@ -31,6 +31,15 @@
     )
   </insert>
 
+  <update id="updateAskOrder" parameterType="String">
+    UPDATE
+      tb_coin_order_history
+    SET
+      ask_order = true
+    WHERE
+      "uuid" = #{uuid}
+  </update>
+
   <update id="updateOrderCancel" parameterType="String">
     UPDATE
       tb_coin_order_history
@@ -51,6 +60,7 @@
       , loss_rate
       , time_limit
       , order_cancel
+      , ask_order
     FROM
       tb_coin_order_history
     WHERE
@@ -58,10 +68,34 @@
     AND
       order_side = #{orderSide}
     AND
+      order_type = #{orderType}
+    AND
       order_cancel = false
     ORDER BY
       order_time DESC
     LIMIT 1
+  </select>
+
+  <select id = "selectAskTargetCoin" resultType="com.dopamine.trade.model.OrderHistory">
+    SELECT
+      uuid
+      , order_side
+      , order_type
+      , market
+      , order_time
+      , profit_rate
+      , loss_rate
+      , time_limit
+      , order_cancel
+      , ask_order
+    FROM
+      tb_coin_order_history
+    WHERE
+      order_side = 'bid'
+    AND
+      ask_order = false
+    ORDER BY
+      order_time ASC
   </select>
 
   <select id="selectOrderHistoryGroupByMarket" resultType="com.dopamine.trade.model.OrderHistoryGroupByMarket">

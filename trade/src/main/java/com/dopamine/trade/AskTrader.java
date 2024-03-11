@@ -1,6 +1,5 @@
 package com.dopamine.trade;
 
-import static com.dopamine.trade.BidTrader.bidList;
 import static com.dopamine.trade.BidTrader.exceptCoin;
 
 import com.dopamine.api_call.QuotationRequestManager;
@@ -8,13 +7,13 @@ import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
 import com.dopamine.api_call.model.response.quotation.order_book.OrderBook;
 import com.dopamine.api_call.type.OrderSide;
+import com.dopamine.api_call.type.OrderType;
 import com.dopamine.common.service.CommonService;
 import com.dopamine.tool.CalcUnit;
 import com.dopamine.trade.model.OrderHistory;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +47,7 @@ public class AskTrader {
         coinAccountList.stream().map(Accounts::getCurrency).collect(
             Collectors.toList()));
 
-    if (currentPriceList.isEmpty()) {
+    if (currentPriceList.size() == 0) {
       return;
     }
 
@@ -58,7 +57,7 @@ public class AskTrader {
           .filter(a -> a.getMarket().equals(account.getCurrency())).findFirst().orElseThrow();
 
       OrderHistory askOrderHistory = orderService.getLastOrder(account.getCurrency(),
-          OrderSide.ASK.getValue());
+          OrderSide.ASK.getValue(), OrderType.LIMIT.getValue());
 
       if (askOrderHistory == null) {
         // 아직 매도 주문을 안했거나 손절, 시간초과로 시장가로 던진상태
@@ -66,7 +65,7 @@ public class AskTrader {
       }
 
       LocalDateTime bidTime = orderService.getLastOrder(account.getCurrency(),
-          OrderSide.BID.getValue()).getOrderTime();
+          OrderSide.BID.getValue(), OrderType.PRICE.getValue()).getOrderTime();
 
       Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
       if (avgBuyPrice * askLossRateValue > currentBidPrice) {
@@ -99,32 +98,32 @@ public class AskTrader {
   @Async
   @Scheduled(fixedRate = 1871)
   public void askLimitTrader() {
-    if (bidList.isEmpty()) {
-      return;
-    }
-
-    List<OrderBook> currentPriceList = QuotationRequestManager.getOrderBookList(
-        new ArrayList<>(bidList.keySet()));
-
-    if (currentPriceList.isEmpty()) {
+    List<OrderHistory> askTargetCoin = orderService.getAskTargetCoin();
+    if (askTargetCoin.isEmpty()) {
       return;
     }
 
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
-    double askProfitRateValue = Double.parseDouble(commonService.getConfig("ASK", "profit_rate"));
+    if (coinAccountList.size() == 0) {
+      return;
+    }
 
-    for (Accounts account : coinAccountList) {
+    double askProfitRateValue = Double.parseDouble(commonService.getConfig("ASK", "profit_rate"));
+    for (OrderHistory orderHistory : askTargetCoin) {
+      Accounts account = coinAccountList.stream()
+          .filter(a -> a.getCurrency().equals(orderHistory.getMarket()))
+          .findFirst().orElseThrow();
+
       double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
       double sellPrice = CalcUnit.exchangeMarketUnit(avgBuyPrice * askProfitRateValue);
 
-      Order order = orderService.askLimitCoin(account.getCurrency(),
-          account.getBalance(), sellPrice);
+      Order order = orderService.askLimitCoin(orderHistory.getMarket(),
+          account.getBalance(), sellPrice, orderHistory.getUuid());
       if (order.isSuccess()) {
-        log.info("[매수완료] 코인명 : {}, 매수단가 : {}, 매도단가 : {}, 설정 수익률 : {}", order.getMarket(),
+        log.info("[매도주문] 코인명 : {}, 매수단가 : {}, 매도단가 : {}, 설정 수익률 : {}", order.getMarket(),
             avgBuyPrice,
             sellPrice,
             askProfitRateValue);
-        bidList.remove(order.getMarket());
       }
     }
   }
