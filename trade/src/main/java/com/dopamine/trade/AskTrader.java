@@ -1,6 +1,7 @@
 package com.dopamine.trade;
 
 import static com.dopamine.trade.BidTrader.bidList;
+import static com.dopamine.trade.BidTrader.exceptCoin;
 
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
@@ -74,6 +75,9 @@ public class AskTrader {
         Order order = orderService.askMarketCoin(account.getCurrency(), account.getBalance());
         if (order.isSuccess()) {
           log.info("[손절매도] 코인명 : {}, 설정 손절률 : {}", order.getMarket(), askLossRateValue);
+          if (!exceptCoin.contains(account.getCurrency())) {
+            exceptCoin.add(account.getCurrency());
+          }
         }
 
       } else if (bidTime.isBefore(LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
@@ -83,6 +87,9 @@ public class AskTrader {
             account.getBalance());
         if (order.isSuccess()) {
           log.info("[시간초과] 코인명 : {}, 설정 초과시간(초) : {}", order.getMarket(), askTimeoutLimitValue);
+          if (!exceptCoin.contains(account.getCurrency())) {
+            exceptCoin.add(account.getCurrency());
+          }
         }
 
       }

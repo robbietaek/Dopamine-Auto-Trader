@@ -37,14 +37,18 @@ public class OrderRecordService {
 
       for (NumerousOrderStatus numerousOrderStatus : numerousOrderStatuseList) {
         if (numerousOrderStatus.getPrice() == null || numerousOrderStatus.getVolume() == null) {
-          IndividualOrderStatus individualOrderStatus = OrderRequestManager.getIndividualOrderStatus(
-              numerousOrderStatus.getUuid());
+          try {
+            Thread.sleep(500);
+            IndividualOrderStatus individualOrderStatus = OrderRequestManager.getIndividualOrderStatus(
+                numerousOrderStatus.getUuid());
 
-          numerousOrderStatus.setPrice(String.valueOf(individualOrderStatus.getTrades().stream()
-              .mapToDouble(funds -> Double.parseDouble(funds.getFunds())).sum()));
+            numerousOrderStatus.setPrice(String.valueOf(individualOrderStatus.getTrades().stream()
+                .mapToDouble(funds -> Double.parseDouble(funds.getFunds())).sum()));
 
-          numerousOrderStatus.setVolume(String.valueOf(individualOrderStatus.getTrades().stream()
-              .mapToDouble(volume -> Double.parseDouble(volume.getVolume())).sum()));
+            numerousOrderStatus.setVolume(String.valueOf(individualOrderStatus.getTrades().stream()
+                .mapToDouble(volume -> Double.parseDouble(volume.getVolume())).sum()));
+          } catch (Exception e) {
+          }
         }
       }
       if (!numerousOrderStatuseList.isEmpty()) {

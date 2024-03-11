@@ -7,6 +7,7 @@ import com.dopamine.common.service.CommonService;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +30,8 @@ public class BidTrader {
   private final QuotationService quotationService;
   private final CommonService commonService;
 
+  public static Queue<String> exceptCoin = new LinkedList<>();
+
   public static Map<String, String> bidList = new HashMap<>();
 
   @Async
@@ -46,7 +49,7 @@ public class BidTrader {
 
       for (String market : askCoinList) {
         if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
-            .contains(market)) {
+            .contains(market) || exceptCoin.contains(market)) {
           continue;
         }
 
@@ -56,6 +59,15 @@ public class BidTrader {
           bidList.put(order.getMarket(), order.getUuid());
           coinOwnCount++;
           krw = accountService.getKRWStatus();
+
+          if (exceptCoin.size() > coinOwnLimit / 2) {
+            exceptCoin.poll();
+          }
+
+          if (!exceptCoin.contains(market)) {
+            exceptCoin.add(market);
+          }
+
         }
 
         if (coinOwnCount == coinOwnLimit) {
