@@ -29,7 +29,6 @@ public class BidTrader {
   private final QuotationService quotationService;
   private final CommonService commonService;
 
-  public static Queue<String> exceptCoinQueue = new LinkedList();
   public static Map<String, String> bidList = new HashMap<>();
 
   @Async
@@ -46,8 +45,7 @@ public class BidTrader {
       }
 
       for (String market : askCoinList) {
-        if (exceptCoinQueue.contains(market)
-            || coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
+        if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
             .contains(market)) {
           continue;
         }
@@ -56,15 +54,8 @@ public class BidTrader {
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         if (order.isSuccess()) {
           bidList.put(order.getMarket(), order.getUuid());
-          if (!exceptCoinQueue.contains(market)) {
-            exceptCoinQueue.add(market);
-          }
           coinOwnCount++;
           krw = accountService.getKRWStatus();
-        }
-
-        if (exceptCoinQueue.size() > coinOwnLimit) {
-          exceptCoinQueue.poll();
         }
 
         if (coinOwnCount == coinOwnLimit) {
