@@ -112,7 +112,7 @@ public class AskTrader {
       Order order = orderService.askLimitCoin(account.getCurrency(),
           account.getBalance(), sellPrice);
       if (order.isSuccess()) {
-        log.info("[매도주문] 코인명 : {}, 매수단가 : {}, 매도단가 : {}, 설정 수익률 : {}", order.getMarket(),
+        log.info("[매수완료] 코인명 : {}, 매수단가 : {}, 매도단가 : {}, 설정 수익률 : {}", order.getMarket(),
             avgBuyPrice,
             sellPrice,
             askProfitRateValue);

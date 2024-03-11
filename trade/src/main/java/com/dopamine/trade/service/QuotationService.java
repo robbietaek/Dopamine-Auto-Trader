@@ -49,31 +49,8 @@ public class QuotationService {
         continue;
       }
 
-      if (bidCoinList.size() > coinOwnLimit * 3) {
+      if (bidCoinList.size() > coinOwnLimit * 2) {
         break;
-      }
-
-      List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "2");
-
-      double tradePrice = 0d;
-      boolean pass = true;
-      for (Minute minute : minuteCandleList) {
-        if (tradePrice == 0d) {
-          tradePrice = minute.getTradePrice();
-          continue;
-        }
-
-        if (tradePrice >= minute.getTradePrice()) {
-          tradePrice = minute.getTradePrice();
-        } else {
-          pass = false;
-          break;
-        }
-      }
-
-      if (!pass) {
-        continue;
       }
 
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(

@@ -57,6 +57,8 @@
       market = #{market}
     AND
       order_side = #{orderSide}
+    AND
+      order_cancel = false
     ORDER BY
       order_time DESC
     LIMIT 1

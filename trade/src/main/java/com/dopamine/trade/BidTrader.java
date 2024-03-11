@@ -55,7 +55,6 @@ public class BidTrader {
         Order order = orderService.bidPriceCoin(market,
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         if (order.isSuccess()) {
-          log.info("[매수주문] 코인명 : {}, 구매총액 : {}", order.getMarket(), order.getPrice());
           bidList.put(order.getMarket(), order.getUuid());
           if (!exceptCoinQueue.contains(market)) {
             exceptCoinQueue.add(market);
