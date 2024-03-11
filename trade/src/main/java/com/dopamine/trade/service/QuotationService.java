@@ -55,6 +55,9 @@ public class QuotationService {
 
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
           currentPrice.getMarket());
+      if (orderAvailable == null) {
+        continue;
+      }
       if (Double.parseDouble(orderAvailable.getBidFee()) > 0.0005d
           || Double.parseDouble(orderAvailable.getAskFee()) > 0.0005d) {
         continue;
