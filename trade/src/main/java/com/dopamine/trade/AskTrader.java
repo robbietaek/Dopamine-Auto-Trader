@@ -57,7 +57,7 @@ public class AskTrader {
           .filter(a -> a.getMarket().equals(account.getCurrency())).findFirst().orElseThrow();
 
       OrderHistory askOrderHistory = orderService.getLastOrder(account.getCurrency(),
-          OrderSide.BID.getValue());
+          OrderSide.ASK.getValue());
 
       if (askOrderHistory == null) {
         // 아직 매도 주문을 안했거나 손절, 시간초과로 시장가로 던진상태
@@ -77,7 +77,6 @@ public class AskTrader {
         }
 
       } else if (bidTime.isBefore(LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
-        System.out.println(account.getCurrency());
         orderService.cancelOrder(askOrderHistory.getUuid());
 
         Order order = orderService.askMarketCoin(account.getCurrency(),
