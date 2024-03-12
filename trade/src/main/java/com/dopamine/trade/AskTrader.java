@@ -129,7 +129,7 @@ public class AskTrader {
             sellPrice,
             askProfitRateValue);
       } else {
-        log.info("[매도주문 실패] order : {}", order);
+        log.error("[매도주문 실패] order : {}", order);
       }
     }
   }

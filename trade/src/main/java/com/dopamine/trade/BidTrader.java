@@ -35,6 +35,10 @@ public class BidTrader {
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
     if (coinOwnCount < coinOwnLimit) {
       double krw = accountService.getKRWStatus();
+      if (krw <= 5000d) {
+        return;
+      }
+
       List<String> askCoinList = quotationService.getBidCoinList(krw);
       if (askCoinList.isEmpty()) {
         return;
