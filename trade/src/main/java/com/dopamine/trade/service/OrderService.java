@@ -38,11 +38,34 @@ public class OrderService {
     return order;
   }
 
-  public Order askMarketCoin(String market, String volume) {
+  public Order askMarketCoin(String market, String volume, String cancelUuid) {
+    Cancel cancelOrder = cancelOrder(cancelUuid);
+
+    if (!cancelOrder.isSuccess()) {
+      for (int i = 0; i < 5; i++) {
+        cancelOrder = cancelOrder(cancelUuid);
+        if (cancelOrder.isSuccess()) {
+          break;
+        }
+      }
+    }
+
     Order order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, 0, OrderType.MARKET);
+
+    if (!order.isSuccess()) {
+      for (int i = 0; i < 5; i++) {
+        order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, 0, OrderType.MARKET);
+        if (order.isSuccess()) {
+          break;
+        }
+      }
+    }
+
     if (order.isSuccess()) {
+      orderDao.updateOrderCancel(cancelUuid);
       orderDao.insertOrderInformation(order);
     }
+    
     return order;
   }
 
@@ -57,11 +80,7 @@ public class OrderService {
   }
 
   public Cancel cancelOrder(String uuid) {
-    Cancel cancel = OrderRequestManager.cancelOrder(uuid);
-    if (cancel.isSuccess()) {
-      orderDao.updateOrderCancel(uuid);
-    }
-    return cancel;
+    return OrderRequestManager.cancelOrder(uuid);
   }
 
   public OrderHistory getLastOrder(String market, String orderSide, String orderType) {

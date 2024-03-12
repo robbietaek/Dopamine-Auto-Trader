@@ -68,35 +68,31 @@ public class AskTrader {
 
       Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
       if (avgBuyPrice * askLossRateValue > currentBidPrice) {
-        orderService.cancelOrder(askOrderHistory.getUuid());
-        Order order = new Order();
-        if (Double.valueOf(account.getBalance()) > 0d) {
-          order = orderService.askMarketCoin(account.getCurrency(), account.getBalance());
-        } else {
-          order = orderService.askMarketCoin(account.getCurrency(), account.getLocked());
-        }
+        Order order = orderService.askMarketCoin(account.getCurrency(),
+            Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
+                : account.getLocked(), askOrderHistory.getUuid());
+
         if (order.isSuccess()) {
           log.info("[손절매도] 코인명 : {}, 설정 손절률 : {}", order.getMarket(), askLossRateValue);
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
           }
+        } else {
+          log.error("손절매도 실패 : {}", order);
         }
 
       } else if (bidTime.isBefore(LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
-        orderService.cancelOrder(askOrderHistory.getUuid());
-
-        Order order = new Order();
-        if (Double.valueOf(account.getBalance()) > 0d) {
-          order = orderService.askMarketCoin(account.getCurrency(), account.getBalance());
-        } else {
-          order = orderService.askMarketCoin(account.getCurrency(), account.getLocked());
-        }
+        Order order = orderService.askMarketCoin(account.getCurrency(),
+            Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
+                : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
           log.info("[시간초과] 코인명 : {}, 설정 초과시간(초) : {}", order.getMarket(), askTimeoutLimitValue);
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
           }
+        } else {
+          log.error("시간초과 매도 실패 : {}", order);
         }
 
       }
@@ -132,6 +128,8 @@ public class AskTrader {
             avgBuyPrice,
             sellPrice,
             askProfitRateValue);
+      } else {
+        log.info("[매도주문 실패] order : {}", order);
       }
     }
   }

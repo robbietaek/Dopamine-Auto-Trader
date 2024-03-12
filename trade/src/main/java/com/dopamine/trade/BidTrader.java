@@ -60,6 +60,8 @@ public class BidTrader {
             exceptCoin.add(market);
           }
 
+        } else {
+          log.info("매수 실패 : {}", order);
         }
         if (coinOwnCount == coinOwnLimit) {
           break;

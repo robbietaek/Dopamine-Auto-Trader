@@ -222,7 +222,6 @@ public final class OrderRequestManager {
     String queryString = String.join("&", queryElements.toArray(new String[0]));
     String authenticationToken = JwtTokenManager.getJwtToken(accessKey, secretKey, queryString);
     Cancel cancel = new Cancel();
-
     try {
       HttpClient client = HttpClientBuilder.create().build();
       HttpDelete request = new HttpDelete(serverUrl + "/v1/order?" + queryString);
@@ -231,8 +230,8 @@ public final class OrderRequestManager {
 
       HttpResponse response = client.execute(request);
       HttpEntity entity = response.getEntity();
-
       cancel = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Cancel.class);
+      Thread.sleep(1000);
     } catch (Exception e) {
     }
 
