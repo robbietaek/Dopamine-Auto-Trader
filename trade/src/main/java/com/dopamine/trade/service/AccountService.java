@@ -2,7 +2,6 @@ package com.dopamine.trade.service;
 
 import com.dopamine.api_call.AccountRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -24,13 +23,7 @@ public class AccountService {
 
   public List<Accounts> getCoinAccountList() {
     List<Accounts> accounts = AccountRequestManager.getAccounts();
-    List<Accounts> coinAccountList = new ArrayList<>();
-    for (Accounts account : accounts) {
-      if (!account.getCurrency().equals("KRW-KRW")) {
-        coinAccountList.add(account);
-      }
-    }
-    return coinAccountList;
+    return accounts.stream().filter(account -> !account.getCurrency().equals("KRW-KRW")).toList();
   }
 
 }

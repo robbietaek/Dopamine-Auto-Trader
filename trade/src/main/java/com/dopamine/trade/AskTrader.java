@@ -10,6 +10,7 @@ import com.dopamine.api_call.type.OrderSide;
 import com.dopamine.api_call.type.OrderType;
 import com.dopamine.common.service.CommonService;
 import com.dopamine.tool.CalcUnit;
+import com.dopamine.trade.dao.OrderDao;
 import com.dopamine.trade.model.OrderHistory;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
@@ -31,6 +32,7 @@ public class AskTrader {
   private final AccountService accountService;
   private final OrderService orderService;
   private final CommonService commonService;
+  private final OrderDao orderDao;
 
   @Scheduled(fixedDelay = 2783)
   public void askTrader() {
@@ -53,7 +55,7 @@ public class AskTrader {
     for (Accounts account : coinAccountList) {
       double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
       OrderBook currentPrice = currentPriceList.stream()
-          .filter(a -> a.getMarket().equals(account.getCurrency())).findFirst().orElseThrow();
+          .filter(a -> a.getMarket().equals(account.getCurrency())).findFirst().get();
 
       OrderHistory askOrderHistory = orderService.getLastOrder(account.getCurrency(),
           OrderSide.ASK.getValue(), OrderType.LIMIT.getValue());
@@ -114,9 +116,16 @@ public class AskTrader {
 
     double askProfitRateValue = Double.parseDouble(commonService.getConfig("ASK", "profit_rate"));
     for (OrderHistory orderHistory : askTargetCoin) {
+      boolean accountExist = coinAccountList.stream()
+          .filter(a -> a.getCurrency().equals(orderHistory.getMarket())).findAny().isPresent();
+
+      if (!accountExist) {
+        orderDao.updateAskOrder(orderHistory.getUuid());
+        continue;
+      }
+
       Accounts account = coinAccountList.stream()
-          .filter(a -> a.getCurrency().equals(orderHistory.getMarket()))
-          .findFirst().orElseThrow();
+          .filter(a -> a.getCurrency().equals(orderHistory.getMarket())).findFirst().get();
 
       double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
       double sellPrice = CalcUnit.exchangeMarketUnit(avgBuyPrice * askProfitRateValue);

@@ -93,6 +93,8 @@
     WHERE
       order_side = 'bid'
     AND
+      order_type = 'price'
+    AND
       ask_order = false
     AND
       (NOW() - interval'3 seconds') > order_time
