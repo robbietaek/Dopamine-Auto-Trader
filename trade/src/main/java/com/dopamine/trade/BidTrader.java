@@ -65,17 +65,23 @@ public class BidTrader {
           break;
         }
 
-        log.info("[익절매도] 코인명 : {}, 구매금액 : {}, 판매금액 : {}, 이득금액 : {}", market,
+        log.info("[익절매도] 코인명 : {}, 수수료 포함 구매금액 : {}, 수수료 포함 정산금액 : {}, 실이득금액 : {}", market,
             String.format("%,.2f",
-                (Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
-                    orderHistory.getProfitRate())) * Double.parseDouble(orderHistory.getVolume())),
+                (Double.parseDouble(orderHistory.getPrice()) / (
+                    Double.parseDouble(orderHistory.getProfitRate()) - 0.0005d))
+                    * Double.parseDouble(
+                    orderHistory.getVolume())
+            ),
             String.format("%,.2f", Double.parseDouble(orderHistory.getPrice()) * Double.parseDouble(
-                orderHistory.getVolume())),
+                orderHistory.getVolume()) / 1.0005d),
             String.format("%,.2f",
                 (Double.parseDouble(orderHistory.getPrice()) * Double.parseDouble(
-                    orderHistory.getVolume()))
-                    - ((Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
-                    orderHistory.getProfitRate())) * Double.parseDouble(orderHistory.getVolume())))
+                    orderHistory.getVolume()) / 1.0005d)
+                    - (Double.parseDouble(orderHistory.getPrice()) / (
+                    Double.parseDouble(orderHistory.getProfitRate()) - 0.0005d))
+                    * Double.parseDouble(
+                    orderHistory.getVolume())
+            )
         );
         ownCoin.remove(market);
       }

@@ -79,19 +79,19 @@ public class AskTrader {
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[손절매도] 코인명 : {}, 구매금액 : {}, 판매금액 : {}, 손해금액 : {}, 손절설정값 : {}",
+          log.info("[손절매도] 코인명 : {}, 수수료 포함 구매금액 : {}, 수수료 포함 정산금액 : {}, 실손해금액 : {}, 손절설정값 : {}",
               order.getMarket(),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
                   currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                       ? Double.parseDouble(account.getBalance())
-                      : Double.parseDouble(account.getLocked()))
-              ),
+                      : Double.parseDouble(account.getLocked())) / 0.9995d),
               String.format("%,.2f",
-                  purchaseCoinKrw - currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
-                      ? Double.parseDouble(account.getBalance())
-                      : Double.parseDouble(account.getLocked())))
-              , askLossRateValue
+                  purchaseCoinKrw - (
+                      currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
+                          ? Double.parseDouble(account.getBalance())
+                          : Double.parseDouble(account.getLocked())) / 0.9995d)),
+              askLossRateValue
           );
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
@@ -108,17 +108,18 @@ public class AskTrader {
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[시간초과] 코인명 : {}, 구매금액 : {}, 판매금액 : {}, 손해금액 : {}, 시간설정값 : {}초",
+          log.info("[시간초과] 코인명 : {}, 수수료 포함 구매금액 : {}, 수수료 포함 정산금액 : {}, 실손해금액 : {}, 시간설정값 : {}초",
               order.getMarket(),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
                   currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                       ? Double.parseDouble(account.getBalance())
-                      : Double.parseDouble(account.getLocked()))),
+                      : Double.parseDouble(account.getLocked())) / 0.9995d),
               String.format("%,.2f",
-                  purchaseCoinKrw - currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
-                      ? Double.parseDouble(account.getBalance())
-                      : Double.parseDouble(account.getLocked()))),
+                  purchaseCoinKrw - (
+                      currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
+                          ? Double.parseDouble(account.getBalance())
+                          : Double.parseDouble(account.getLocked())) / 0.9995d)),
               askTimeoutLimitValue
           );
 
