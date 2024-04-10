@@ -61,7 +61,8 @@ public class BidTrader {
             OrderSide.ASK.getValue(), OrderType.LIMIT.getValue());
         log.info("[익절매도] 코인명 : {}, 구매단가 : {}, 익절단가 : {}", market,
             String.format("%.2f", Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
-                orderHistory.getProfitRate())), String.format("%.2f", orderHistory.getPrice()));
+                orderHistory.getProfitRate())),
+            String.format("%.2f", Double.parseDouble(orderHistory.getPrice())));
         ownCoin.remove(market);
       }
 
