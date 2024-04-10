@@ -97,15 +97,15 @@
     AND
       ask_order = false
     AND
-      (NOW() - interval'3 seconds') > order_time
+      (NOW() - interval'5 seconds') > order_time
     ORDER BY
       order_time ASC
   </select>
 
   <select id="selectOrderHistoryGroupByMarket" resultType="com.dopamine.trade.model.OrderHistoryGroupByMarket">
     SELECT
-      market
-      , ARRAY_TO_STRING(ARRAY_AGG(uuid), ',') AS uuid_list
+      tcoh.market
+      , ARRAY_TO_STRING(ARRAY_AGG(tcoh.uuid), ',') AS uuid_list
     FROM
       (
         SELECT
@@ -116,9 +116,9 @@
         ORDER BY
           order_time DESC
         LIMIT #{limit}
-      )
+      ) tcoh
     GROUP BY
-      market
+      tcoh.market
   </select>
 
 </mapper>
