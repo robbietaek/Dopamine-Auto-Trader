@@ -45,11 +45,15 @@ public class BidTrader {
       log.info("[자산가치] : {}원", currentTotalAccountKrw);
     }
 
+    if (exceptCoin.isEmpty()) {
+      exceptCoin.addAll(coinOwnList);
+    }
+
     int coinOwnCount = coinAccountList.size();
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
     if (coinOwnCount < coinOwnLimit) {
 
-      for (String market : ownCoin.stream().filter(market -> coinOwnList.contains(coinOwnList))
+      for (String market : ownCoin.stream().filter(market -> !coinOwnList.contains(market))
           .toList()) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(market, "ask", "limit");
         log.info("[익절매도] 코인명 : {}, 구매단가 : {}, 익절단가 : {}", market, orderHistory.getPrice(),
