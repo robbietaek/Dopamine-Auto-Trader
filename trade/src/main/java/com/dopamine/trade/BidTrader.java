@@ -44,7 +44,7 @@ public class BidTrader {
     if (ownCoin.isEmpty()) {
       ownCoin.addAll(coinOwnList);
       double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
-      log.info("[자산가치] : {}원", String.format("%.0f", currentTotalAccountKrw));
+      log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
     }
 
     if (exceptCoin.isEmpty()) {
@@ -60,9 +60,9 @@ public class BidTrader {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(market,
             OrderSide.ASK.getValue(), OrderType.LIMIT.getValue());
         log.info("[익절매도] 코인명 : {}, 구매단가 : {}, 익절단가 : {}", market,
-            String.format("%.2f", Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
+            String.format("%,.2f", Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
                 orderHistory.getProfitRate())),
-            String.format("%.2f", Double.parseDouble(orderHistory.getPrice())));
+            String.format("%,.2f", Double.parseDouble(orderHistory.getPrice())));
         ownCoin.remove(market);
       }
 
@@ -77,7 +77,7 @@ public class BidTrader {
       }
 
       double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
-      log.info("[자산가치] : {}원", String.format("%.0f", currentTotalAccountKrw));
+      log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
 
       for (String market : askCoinList) {
         if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
