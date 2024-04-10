@@ -93,13 +93,13 @@ public class AskTrader {
         }
 
       } else if (bidTime.isBefore(LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
+        OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
+            "limit");
         Order order = orderService.askMarketCoin(account.getCurrency(),
             Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
-              "limit");
           log.info("[시간초과] 코인명 : {}, 구매단가 : {}, 판매단가 : {}, 설정 초과시간(초) : {}", order.getMarket(),
               String.format("%,.2f",
                   Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(

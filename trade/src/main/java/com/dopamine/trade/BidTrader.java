@@ -59,6 +59,12 @@ public class BidTrader {
           .toList()) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(market,
             OrderSide.ASK.getValue(), OrderType.LIMIT.getValue());
+
+        if (orderHistory == null) {
+          ownCoin.remove(market);
+          break;
+        }
+
         log.info("[익절매도] 코인명 : {}, 구매단가 : {}, 익절단가 : {}", market,
             String.format("%,.2f", Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
                 orderHistory.getProfitRate())),
