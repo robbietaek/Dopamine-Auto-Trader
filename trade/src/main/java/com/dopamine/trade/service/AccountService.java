@@ -56,9 +56,6 @@ public class AccountService {
 
   public Double getPurchaseTotalAccountKrw() {
     List<Accounts> accountList = AccountRequestManager.getAccounts();
-    List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
-        getCoinAccountList().stream().map(Accounts::getCurrency).collect(
-            Collectors.toList()));
     double totalKrw = 0l;
 
     for (Accounts account : accountList) {
@@ -74,6 +71,28 @@ public class AccountService {
     }
 
     return totalKrw;
+  }
+
+  public Double getPurchaseCoinKrw(String market) {
+    List<Accounts> accountList = AccountRequestManager.getAccounts();
+    double purchaseKrw = 0l;
+
+    for (Accounts account : accountList) {
+      if (account.getCurrency().equals(market)) {
+        if (account.getBalance().equals("0") && !account.getLocked().equals("0")) {
+          purchaseKrw +=
+              Double.parseDouble(account.getLocked()) * Double.parseDouble(
+                  account.getAvgBuyPrice());
+        } else {
+          purchaseKrw +=
+              Double.parseDouble(account.getBalance()) * Double.parseDouble(
+                  account.getAvgBuyPrice());
+        }
+        break;
+      }
+    }
+    return purchaseKrw;
+
   }
 
 }

@@ -73,19 +73,26 @@ public class AskTrader {
       if (avgBuyPrice * askLossRateValue > currentBidPrice) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
             "limit");
+        double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
         Order order = orderService.askMarketCoin(account.getCurrency(),
             Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[손절매도] 코인명 : {}, 구매단가 : {}, 손절단가 : {}", order.getMarket(),
+          log.info("[손절매도] 코인명 : {}, 구매금액 : {}, 판매금액 : {}, 손해금액 : {}, 손절설정값 : {}",
+              order.getMarket(),
+              String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
-                  Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
-                      orderHistory.getProfitRate())),
+                  currentBidPrice * Double.parseDouble(account.getBalance()) > 0d
+                      ? Double.parseDouble(account.getBalance())
+                      : Double.parseDouble(account.getLocked())
+              ),
               String.format("%,.2f",
-                  (Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
-                      orderHistory.getProfitRate())) * Double.parseDouble(
-                      orderHistory.getLossRate())));
+                  purchaseCoinKrw - currentBidPrice * Double.parseDouble(account.getBalance()) > 0d
+                      ? Double.parseDouble(account.getBalance())
+                      : Double.parseDouble(account.getLocked()))
+              , askLossRateValue
+          );
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
           }
@@ -95,17 +102,26 @@ public class AskTrader {
       } else if (bidTime.isBefore(LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
             "limit");
+        double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
         Order order = orderService.askMarketCoin(account.getCurrency(),
             Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[시간초과] 코인명 : {}, 구매단가 : {}, 판매단가 : {}, 설정 초과시간(초) : {}", order.getMarket(),
+          log.info("[시간초과] 코인명 : {}, 구매금액 : {}, 판매금액 : {}, 손해금액 : {}, 시간설정값 : {}초",
+              order.getMarket(),
+              String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
-                  Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
-                      orderHistory.getProfitRate())),
-              String.format("%,.2f", currentBidPrice)
-              , askTimeoutLimitValue);
+                  currentBidPrice * Double.parseDouble(account.getBalance()) > 0d
+                      ? Double.parseDouble(account.getBalance())
+                      : Double.parseDouble(account.getLocked())),
+              String.format("%,.2f",
+                  purchaseCoinKrw - currentBidPrice * Double.parseDouble(account.getBalance()) > 0d
+                      ? Double.parseDouble(account.getBalance())
+                      : Double.parseDouble(account.getLocked()),
+                  String.format("%,.2f", bidTime)
+              )
+          );
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
           }

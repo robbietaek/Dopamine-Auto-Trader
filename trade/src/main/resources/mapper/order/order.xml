@@ -12,6 +12,7 @@
       , order_type
       , market
       , price
+      , volume
       , order_time
       , profit_rate
       , loss_rate
@@ -24,6 +25,7 @@
       , #{order.ordType}
       , #{order.market}
       , #{order.price}
+      , #{order.volume}
       , NOW()
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'profit_rate')
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'loss_rate')
@@ -56,6 +58,7 @@
       , order_type
       , market
       , price
+      , volume
       , order_time
       , profit_rate
       , loss_rate
@@ -84,6 +87,7 @@
       , order_type
       , market
       , price
+      , volume
       , order_time
       , profit_rate
       , loss_rate

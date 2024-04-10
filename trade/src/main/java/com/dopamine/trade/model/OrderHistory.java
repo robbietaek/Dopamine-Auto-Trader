@@ -16,6 +16,7 @@ public class OrderHistory implements Serializable {
   private String orderType;
   private String market;
   private String price;
+  private String volume;
   private LocalDateTime orderTime;
   private String profitRate;
   private String lossRate;

@@ -65,10 +65,18 @@ public class BidTrader {
           break;
         }
 
-        log.info("[익절매도] 코인명 : {}, 구매단가 : {}, 익절단가 : {}", market,
-            String.format("%,.2f", Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
-                orderHistory.getProfitRate())),
-            String.format("%,.2f", Double.parseDouble(orderHistory.getPrice())));
+        log.info("[익절매도] 코인명 : {}, 구매금액 : {}, 판매금액 : {}, 이득금액 : {}", market,
+            String.format("%,.2f",
+                (Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
+                    orderHistory.getProfitRate())) * Double.parseDouble(orderHistory.getVolume())),
+            String.format("%,.2f", Double.parseDouble(orderHistory.getPrice()) * Double.parseDouble(
+                orderHistory.getVolume())),
+            String.format("%,.2f",
+                (Double.parseDouble(orderHistory.getPrice()) * Double.parseDouble(
+                    orderHistory.getVolume()))
+                    - ((Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
+                    orderHistory.getProfitRate())) * Double.parseDouble(orderHistory.getVolume())))
+        );
         ownCoin.remove(market);
       }
 
