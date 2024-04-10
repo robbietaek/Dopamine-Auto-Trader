@@ -2,6 +2,8 @@ package com.dopamine.trade;
 
 import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
+import com.dopamine.api_call.type.OrderSide;
+import com.dopamine.api_call.type.OrderType;
 import com.dopamine.common.service.CommonService;
 import com.dopamine.trade.dao.OrderDao;
 import com.dopamine.trade.model.OrderHistory;
@@ -42,7 +44,7 @@ public class BidTrader {
     if (ownCoin.isEmpty()) {
       ownCoin.addAll(coinOwnList);
       double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
-      log.info("[자산가치] : {}원", currentTotalAccountKrw);
+      log.info("[자산가치] : {}원", String.format("%.0f", currentTotalAccountKrw));
     }
 
     if (exceptCoin.isEmpty()) {
@@ -55,15 +57,14 @@ public class BidTrader {
 
       for (String market : ownCoin.stream().filter(market -> !coinOwnList.contains(market))
           .toList()) {
-        OrderHistory orderHistory = orderDao.selectLastOrderHistory(market, "ask", "limit");
-        log.info("[익절매도] 코인명 : {}, 구매단가 : {}, 익절단가 : {}", market, orderHistory.getPrice(),
-            Double.parseDouble(orderHistory.getPrice()) * Double.parseDouble(
-                orderHistory.getProfitRate()));
+        OrderHistory orderHistory = orderDao.selectLastOrderHistory(market,
+            OrderSide.ASK.getValue(), OrderType.LIMIT.getValue());
+        log.info("[익절매도] 코인명 : {}, 구매단가 : {}, 익절단가 : {}", market,
+            String.format("%.2f", Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
+                orderHistory.getProfitRate())), String.format("%.2f", orderHistory.getPrice()));
         ownCoin.remove(market);
       }
 
-      double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
-      log.info("[자산가치] : {}원", currentTotalAccountKrw);
       double krw = accountService.getKRWStatus();
       if (krw <= 5000d) {
         return;
@@ -73,6 +74,9 @@ public class BidTrader {
       if (askCoinList.isEmpty()) {
         return;
       }
+
+      double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
+      log.info("[자산가치] : {}원", String.format("%.0f", currentTotalAccountKrw));
 
       for (String market : askCoinList) {
         if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
@@ -94,9 +98,8 @@ public class BidTrader {
             exceptCoin.add(market);
           }
           ownCoin.add(market);
-        } else {
-          log.info("매수 실패 : {}", order);
         }
+
         if (coinOwnCount == coinOwnLimit) {
           break;
         }

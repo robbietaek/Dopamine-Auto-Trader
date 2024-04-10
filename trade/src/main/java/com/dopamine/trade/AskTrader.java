@@ -79,15 +79,17 @@ public class AskTrader {
           OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
               "limit");
           log.info("[손절매도] 코인명 : {}, 구매단가 : {}, 손절단가 : {}", order.getMarket(),
-              orderHistory.getPrice(),
-              Double.parseDouble(orderHistory.getPrice()) * Double.parseDouble(
-                  orderHistory.getLossRate()));
+              String.format("%.2f",
+                  Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
+                      orderHistory.getProfitRate())),
+              String.format("%.2f",
+                  (Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
+                      orderHistory.getProfitRate())) * Double.parseDouble(
+                      orderHistory.getLossRate())));
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
           }
           ownCoin.remove(account.getCurrency());
-        } else {
-          log.error("손절매도 실패 재시도 예정");
         }
 
       } else if (bidTime.isBefore(LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
@@ -96,13 +98,18 @@ public class AskTrader {
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[시간초과] 코인명 : {}, 설정 초과시간(초) : {}", order.getMarket(), askTimeoutLimitValue);
+          OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
+              "limit");
+          log.info("[시간초과] 코인명 : {}, 구매단가 : {}, 판매단가 : {}, 설정 초과시간(초) : {}", order.getMarket(),
+              String.format("%.2f",
+                  Double.parseDouble(orderHistory.getPrice()) / Double.parseDouble(
+                      orderHistory.getProfitRate())),
+              String.format("%.2f", currentBidPrice)
+              , askTimeoutLimitValue);
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
           }
           ownCoin.remove(account.getCurrency());
-        } else {
-          log.error("시간초과 매도 실패 재시도 예정");
         }
 
       }

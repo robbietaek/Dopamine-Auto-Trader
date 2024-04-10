@@ -4,7 +4,6 @@ import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.tool.JwtTokenManager;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +51,8 @@ public final class AccountRequestManager {
           new TypeReference<List<Accounts>>() {
           });
 
-    } catch (IOException e) {
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
     return accounts;

@@ -14,7 +14,6 @@ import com.dopamine.tool.JwtTokenManager;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,7 +73,8 @@ public final class OrderRequestManager {
       HttpEntity entity = response.getEntity();
       orderAvailable = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"),
           OrderAvailable.class);
-    } catch (IOException e) {
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
     return orderAvailable;
@@ -103,7 +103,8 @@ public final class OrderRequestManager {
       HttpEntity entity = response.getEntity();
       individualOrderStatus = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"),
           IndividualOrderStatus.class);
-    } catch (IOException e) {
+    } catch (Exception e) {
+      e.printStackTrace();
     }
     return individualOrderStatus;
   }
@@ -146,7 +147,8 @@ public final class OrderRequestManager {
       numerousOrderStatus = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"),
           new TypeReference<List<NumerousOrderStatus>>() {
           });
-    } catch (IOException e) {
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
     return numerousOrderStatus;
@@ -205,6 +207,7 @@ public final class OrderRequestManager {
       HttpEntity entity = response.getEntity();
       order = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Order.class);
     } catch (Exception e) {
+      e.printStackTrace();
     }
 
     return order;
@@ -233,6 +236,7 @@ public final class OrderRequestManager {
       cancel = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Cancel.class);
       Thread.sleep(1000);
     } catch (Exception e) {
+      e.printStackTrace();
     }
 
     return cancel;
