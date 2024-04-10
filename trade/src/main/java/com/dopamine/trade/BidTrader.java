@@ -3,12 +3,16 @@ package com.dopamine.trade;
 import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
 import com.dopamine.common.service.CommonService;
+import com.dopamine.trade.dao.OrderDao;
+import com.dopamine.trade.model.OrderHistory;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,16 +28,38 @@ public class BidTrader {
   private final OrderService orderService;
   private final QuotationService quotationService;
   private final CommonService commonService;
+  private final OrderDao orderDao;
 
   public static Queue<String> exceptCoin = new LinkedList<>();
+  public static Set<String> ownCoin = new HashSet<>();
 
 
   @Scheduled(fixedDelay = 2383)
   public void bidTrader() {
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
+    List<String> coinOwnList = coinAccountList.stream().map(Accounts::getCurrency).toList();
+
+    if (ownCoin.isEmpty()) {
+      ownCoin.addAll(coinOwnList);
+      double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
+      log.info("[자산가치] : {}원", currentTotalAccountKrw);
+    }
+
     int coinOwnCount = coinAccountList.size();
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
     if (coinOwnCount < coinOwnLimit) {
+
+      for (String market : ownCoin.stream().filter(market -> coinOwnList.contains(coinOwnList))
+          .toList()) {
+        OrderHistory orderHistory = orderDao.selectLastOrderHistory(market, "ask", "limit");
+        log.info("[익절매도] 코인명 : {}, 구매단가 : {}, 익절단가 : {}", market, orderHistory.getPrice(),
+            Double.parseDouble(orderHistory.getPrice()) * Double.parseDouble(
+                orderHistory.getProfitRate()));
+        ownCoin.remove(market);
+      }
+
+      double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
+      log.info("[자산가치] : {}원", currentTotalAccountKrw);
       double krw = accountService.getKRWStatus();
       if (krw <= 5000d) {
         return;
@@ -63,7 +89,7 @@ public class BidTrader {
           if (!exceptCoin.contains(market)) {
             exceptCoin.add(market);
           }
-
+          ownCoin.add(market);
         } else {
           log.info("매수 실패 : {}", order);
         }

@@ -55,6 +55,7 @@
       , order_side
       , order_type
       , market
+      , price
       , order_time
       , profit_rate
       , loss_rate
@@ -82,6 +83,7 @@
       , order_side
       , order_type
       , market
+      , price
       , order_time
       , profit_rate
       , loss_rate

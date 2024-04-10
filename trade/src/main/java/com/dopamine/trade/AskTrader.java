@@ -1,6 +1,7 @@
 package com.dopamine.trade;
 
 import static com.dopamine.trade.BidTrader.exceptCoin;
+import static com.dopamine.trade.BidTrader.ownCoin;
 
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
@@ -75,12 +76,18 @@ public class AskTrader {
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[손절매도] 코인명 : {}, 설정 손절률 : {}", order.getMarket(), askLossRateValue);
+          OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
+              "limit");
+          log.info("[손절매도] 코인명 : {}, 구매단가 : {}, 손절단가 : {}", order.getMarket(),
+              orderHistory.getPrice(),
+              Double.parseDouble(orderHistory.getPrice()) * Double.parseDouble(
+                  orderHistory.getLossRate()));
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
           }
+          ownCoin.remove(account.getCurrency());
         } else {
-          log.error("손절매도 실패 : {}", order);
+          log.error("손절매도 실패 재시도 예정");
         }
 
       } else if (bidTime.isBefore(LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
@@ -93,8 +100,9 @@ public class AskTrader {
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
           }
+          ownCoin.remove(account.getCurrency());
         } else {
-          log.error("시간초과 매도 실패 : {}", order);
+          log.error("시간초과 매도 실패 재시도 예정");
         }
 
       }
@@ -132,13 +140,9 @@ public class AskTrader {
 
       Order order = orderService.askLimitCoin(orderHistory.getMarket(),
           account.getBalance(), sellPrice, orderHistory.getUuid());
+
       if (order.isSuccess()) {
-        log.info("[매도주문] 코인명 : {}, 매수단가 : {}, 매도단가 : {}, 설정 수익률 : {}", order.getMarket(),
-            avgBuyPrice,
-            sellPrice,
-            askProfitRateValue);
-      } else {
-        log.error("[매도주문 실패] order : {}", order);
+        ownCoin.add(orderHistory.getMarket());
       }
     }
   }
