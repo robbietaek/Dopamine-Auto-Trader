@@ -83,14 +83,14 @@ public class AskTrader {
               order.getMarket(),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
-                  currentBidPrice * Double.parseDouble(account.getBalance()) > 0d
-                      ? Double.parseDouble(account.getBalance())
-                      : Double.parseDouble(account.getLocked())
-              ),
-              String.format("%,.2f",
-                  purchaseCoinKrw - currentBidPrice * Double.parseDouble(account.getBalance()) > 0d
+                  currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                       ? Double.parseDouble(account.getBalance())
                       : Double.parseDouble(account.getLocked()))
+              ),
+              String.format("%,.2f",
+                  purchaseCoinKrw - currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
+                      ? Double.parseDouble(account.getBalance())
+                      : Double.parseDouble(account.getLocked())))
               , askLossRateValue
           );
           if (!exceptCoin.contains(account.getCurrency())) {
@@ -112,16 +112,16 @@ public class AskTrader {
               order.getMarket(),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
-                  currentBidPrice * Double.parseDouble(account.getBalance()) > 0d
+                  currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                       ? Double.parseDouble(account.getBalance())
-                      : Double.parseDouble(account.getLocked())),
+                      : Double.parseDouble(account.getLocked()))),
               String.format("%,.2f",
-                  purchaseCoinKrw - currentBidPrice * Double.parseDouble(account.getBalance()) > 0d
+                  purchaseCoinKrw - currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                       ? Double.parseDouble(account.getBalance())
-                      : Double.parseDouble(account.getLocked()),
-                  String.format("%,.2f", bidTime)
-              )
+                      : Double.parseDouble(account.getLocked()))),
+              askTimeoutLimitValue
           );
+
           if (!exceptCoin.contains(account.getCurrency())) {
             exceptCoin.add(account.getCurrency());
           }
