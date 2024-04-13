@@ -1,6 +1,5 @@
 package com.dopamine.trade;
 
-import static com.dopamine.trade.BidTrader.exceptCoin;
 import static com.dopamine.trade.BidTrader.ownCoin;
 
 import com.dopamine.api_call.QuotationRequestManager;
@@ -66,10 +65,9 @@ public class AskTrader {
         continue;
       }
 
-      LocalDateTime bidTime = orderService.getLastOrder(account.getCurrency(),
-          OrderSide.BID.getValue(), OrderType.PRICE.getValue()).getOrderTime();
-
+      LocalDateTime limitAskOrderTime = askOrderHistory.getOrderTime();
       Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
+
       if (avgBuyPrice * askLossRateValue > currentBidPrice) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
             "limit");
@@ -79,7 +77,7 @@ public class AskTrader {
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[손절매도] 코인명 : {}, 수수료 포함 구매금액 : {}, 수수료 포함 정산금액 : {}, 실손해금액 : {}, 손절설정값 : {}",
+          log.info("[손절매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 손해금액 : {}, 손절설정값 : {}",
               order.getMarket(),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
@@ -87,19 +85,17 @@ public class AskTrader {
                       ? Double.parseDouble(account.getBalance())
                       : Double.parseDouble(account.getLocked())) / 0.9995d),
               String.format("%,.2f",
-                  purchaseCoinKrw - (
+                  -1 * (purchaseCoinKrw - (
                       currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                           ? Double.parseDouble(account.getBalance())
-                          : Double.parseDouble(account.getLocked())) / 0.9995d)),
+                          : Double.parseDouble(account.getLocked())) / 0.9995d))),
               askLossRateValue
           );
-          if (!exceptCoin.contains(account.getCurrency())) {
-            exceptCoin.add(account.getCurrency());
-          }
           ownCoin.remove(account.getCurrency());
         }
 
-      } else if (bidTime.isBefore(LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
+      } else if (limitAskOrderTime.isBefore(
+          LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
             "limit");
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
@@ -108,7 +104,7 @@ public class AskTrader {
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[시간초과] 코인명 : {}, 수수료 포함 구매금액 : {}, 수수료 포함 정산금액 : {}, 실손해금액 : {}, 시간설정값 : {}초",
+          log.info("[시간초과] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 손해금액 : {}, 시간설정값 : {}초",
               order.getMarket(),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
@@ -116,16 +112,13 @@ public class AskTrader {
                       ? Double.parseDouble(account.getBalance())
                       : Double.parseDouble(account.getLocked())) / 0.9995d),
               String.format("%,.2f",
-                  purchaseCoinKrw - (
+                  -1 * (purchaseCoinKrw - (
                       currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                           ? Double.parseDouble(account.getBalance())
-                          : Double.parseDouble(account.getLocked())) / 0.9995d)),
+                          : Double.parseDouble(account.getLocked())) / 0.9995d))),
               askTimeoutLimitValue
           );
 
-          if (!exceptCoin.contains(account.getCurrency())) {
-            exceptCoin.add(account.getCurrency());
-          }
           ownCoin.remove(account.getCurrency());
         }
 
@@ -152,7 +145,7 @@ public class AskTrader {
           .filter(a -> a.getCurrency().equals(orderHistory.getMarket())).findAny().isPresent();
 
       if (!accountExist) {
-        orderDao.updateAskOrder(orderHistory.getUuid());
+        orderDao.updateBidOrder(orderHistory.getUuid());
         continue;
       }
 

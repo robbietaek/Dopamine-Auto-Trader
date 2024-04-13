@@ -65,7 +65,7 @@ public class OrderService {
       orderDao.updateOrderCancel(cancelUuid);
       orderDao.insertOrderInformation(order);
     }
-    
+
     return order;
   }
 
@@ -73,8 +73,9 @@ public class OrderService {
     Order order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, price,
         OrderType.LIMIT);
     if (order.isSuccess()) {
+      orderDao.updateAskOrder(market);
       orderDao.insertOrderInformation(order);
-      orderDao.updateAskOrder(historyUuid);
+      orderDao.updateBidOrder(historyUuid);
     }
     return order;
   }

@@ -12,7 +12,9 @@ public interface OrderDao {
 
   void insertOrderInformation(@Param("order") Order order);
 
-  void updateAskOrder(@Param("uuid") String uuid);
+  void updateAskOrder(@Param("market") String market);
+
+  void updateBidOrder(@Param("uuid") String uuid);
 
   void updateOrderCancel(@Param("uuid") String uuid);
 

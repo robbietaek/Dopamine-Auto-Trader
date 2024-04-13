@@ -11,9 +11,7 @@ import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +30,6 @@ public class BidTrader {
   private final CommonService commonService;
   private final OrderDao orderDao;
 
-  public static Queue<String> exceptCoin = new LinkedList<>();
   public static Set<String> ownCoin = new HashSet<>();
 
 
@@ -45,10 +42,6 @@ public class BidTrader {
       ownCoin.addAll(coinOwnList);
       double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
       log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
-    }
-
-    if (exceptCoin.isEmpty()) {
-      exceptCoin.addAll(coinOwnList);
     }
 
     int coinOwnCount = coinAccountList.size();
@@ -65,7 +58,7 @@ public class BidTrader {
           break;
         }
 
-        log.info("[익절매도] 코인명 : {}, 수수료 포함 구매금액 : {}, 수수료 포함 정산금액 : {}, 실이득금액 : {}", market,
+        log.info("[익절매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 이득금액 : {}", market,
             String.format("%,.2f",
                 (Double.parseDouble(orderHistory.getPrice()) / (
                     Double.parseDouble(orderHistory.getProfitRate()) - 0.0005d))
@@ -101,7 +94,7 @@ public class BidTrader {
 
       for (String market : askCoinList) {
         if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
-            .contains(market) || exceptCoin.contains(market)) {
+            .contains(market)) {
           continue;
         }
 
@@ -110,14 +103,6 @@ public class BidTrader {
         if (order.isSuccess()) {
           coinOwnCount++;
           krw = accountService.getKRWStatus();
-
-          if (exceptCoin.size() > coinOwnLimit / 2) {
-            exceptCoin.poll();
-          }
-
-          if (!exceptCoin.contains(market)) {
-            exceptCoin.add(market);
-          }
           ownCoin.add(market);
         }
 

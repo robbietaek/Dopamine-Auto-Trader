@@ -37,7 +37,23 @@
     UPDATE
       tb_coin_order_history
     SET
+      is_expired = true
+    WHERE
+      market = #{market}
+    AND
+      order_type = 'bid'
+    AND
+      order_side = 'limit'
+    AND
+      order_time <![CDATA[<=]]> NOW()
+  </update>
+
+  <update id="updateBidOrder" parameterType="String">
+    UPDATE
+      tb_coin_order_history
+    SET
       ask_order = true
+      , is_expired = true
     WHERE
       "uuid" = #{uuid}
   </update>
@@ -65,6 +81,7 @@
       , time_limit
       , order_cancel
       , ask_order
+      , is_expired
     FROM
       tb_coin_order_history
     WHERE
@@ -75,6 +92,8 @@
       order_type = #{orderType}
     AND
       order_cancel = false
+    AND
+      is_expired = false
     ORDER BY
       order_time DESC
     LIMIT 1
@@ -94,6 +113,7 @@
       , time_limit
       , order_cancel
       , ask_order
+      , is_expired
     FROM
       tb_coin_order_history
     WHERE
@@ -102,6 +122,8 @@
       order_type = 'price'
     AND
       ask_order = false
+    AND
+      is_expired = false
     AND
       (NOW() - interval'5 seconds') > order_time
     ORDER BY

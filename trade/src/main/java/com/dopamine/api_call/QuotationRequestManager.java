@@ -112,12 +112,13 @@ public final class QuotationRequestManager {
     return orderBookList;
   }
 
-  public static List<Minute> getMinuteCandleList(String market, String count) {
+  public static List<Minute> getMinuteCandleList(String market, String count, String unit) {
     OkHttpClient client = new OkHttpClient();
 
     ArrayList<String> queryElements = new ArrayList<>();
     queryElements.add("market=" + market);
     queryElements.add("count=" + count);
+    queryElements.add("unit=" + unit);
 
     String queryString = String.join("&", queryElements.toArray(new String[0]));
 

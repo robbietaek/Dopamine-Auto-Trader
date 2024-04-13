@@ -23,5 +23,6 @@ public class OrderHistory implements Serializable {
   private String timeLimit;
   private boolean orderCancel;
   private boolean askOrder;
+  private boolean isExpired;
 
 }
