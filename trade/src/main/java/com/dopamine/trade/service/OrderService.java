@@ -40,7 +40,6 @@ public class OrderService {
 
   public Order askMarketCoin(String market, String volume, String cancelUuid) {
     Cancel cancelOrder = cancelOrder(cancelUuid);
-
     if (!cancelOrder.isSuccess()) {
       for (int i = 0; i < 5; i++) {
         cancelOrder = cancelOrder(cancelUuid);
@@ -50,8 +49,11 @@ public class OrderService {
       }
     }
 
-    Order order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, 0, OrderType.MARKET);
+    if (cancelOrder.isSuccess()) {
+      orderDao.updateOrderCancel(cancelUuid);
+    }
 
+    Order order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, 0, OrderType.MARKET);
     if (!order.isSuccess()) {
       for (int i = 0; i < 5; i++) {
         order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, 0, OrderType.MARKET);
@@ -62,7 +64,6 @@ public class OrderService {
     }
 
     if (order.isSuccess()) {
-      orderDao.updateOrderCancel(cancelUuid);
       orderDao.insertOrderInformation(order);
     }
 

@@ -63,6 +63,7 @@
       tb_coin_order_history
     SET
       order_cancel = true
+      , is_expired = true
     WHERE
       "uuid" = #{uuid}
   </update>
