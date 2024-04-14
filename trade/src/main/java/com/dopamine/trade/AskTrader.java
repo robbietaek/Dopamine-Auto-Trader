@@ -77,7 +77,7 @@ public class AskTrader {
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[손절매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 손해금액 : {}, 손절설정값 : {}",
+          log.info("[손절매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 손해금액 : {}, 손절설정값 : {}, 차트종류 : {}",
               order.getMarket(),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
@@ -89,7 +89,8 @@ public class AskTrader {
                       currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                           ? Double.parseDouble(account.getBalance())
                           : Double.parseDouble(account.getLocked())) / 0.9995d))),
-              askLossRateValue
+              askLossRateValue,
+              orderHistory.getChartType()
           );
           ownCoin.remove(account.getCurrency());
         }
@@ -104,7 +105,7 @@ public class AskTrader {
                 : account.getLocked(), askOrderHistory.getUuid());
 
         if (order.isSuccess()) {
-          log.info("[시간초과] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 손해금액 : {}, 시간설정값 : {}초",
+          log.info("[시간초과] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 손해금액 : {}, 시간설정값 : {}초, 차트종류 : {}",
               order.getMarket(),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
@@ -116,7 +117,8 @@ public class AskTrader {
                       currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                           ? Double.parseDouble(account.getBalance())
                           : Double.parseDouble(account.getLocked())) / 0.9995d))),
-              askTimeoutLimitValue
+              askTimeoutLimitValue,
+              orderHistory.getChartType()
           );
 
           ownCoin.remove(account.getCurrency());
@@ -145,7 +147,7 @@ public class AskTrader {
           .filter(a -> a.getCurrency().equals(orderHistory.getMarket())).findAny().isPresent();
 
       if (!accountExist) {
-        orderDao.updateBidOrder(orderHistory.getUuid());
+        orderDao.updateCoinOrderHistoryExpiredByUuid(orderHistory.getUuid());
         continue;
       }
 
@@ -155,8 +157,8 @@ public class AskTrader {
       double avgBuyPrice = Double.parseDouble(account.getAvgBuyPrice());
       double sellPrice = CalcUnit.exchangeMarketUnit(avgBuyPrice * askProfitRateValue);
 
-      Order order = orderService.askLimitCoin(orderHistory.getMarket(),
-          account.getBalance(), sellPrice, orderHistory.getUuid());
+      Order order = orderService.askLimitCoin(orderHistory.getMarket(), orderHistory.getChartType(),
+          account.getBalance(), sellPrice);
 
       if (order.isSuccess()) {
         ownCoin.add(orderHistory.getMarket());

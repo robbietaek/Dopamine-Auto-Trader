@@ -12,9 +12,14 @@ public interface OrderDao {
 
   void insertOrderInformation(@Param("order") Order order);
 
-  void updateAskOrder(@Param("market") String market);
+  void insertOrderInformationWithChartType(@Param("order") Order order,
+      @Param("chartType") String chartType);
 
-  void updateBidOrder(@Param("uuid") String uuid);
+  void updateBidPriceCoinOrderHistoryExpired(@Param("market") String market);
+
+  void updateAskLimitCoinOrderHistoryExpired();
+
+  void updateCoinOrderHistoryExpiredByUuid(@Param("uuid") String uuid);
 
   void updateOrderCancel(@Param("uuid") String uuid);
 

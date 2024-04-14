@@ -12,6 +12,7 @@ import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class BidTrader {
       ownCoin.addAll(coinOwnList);
       double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
       log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
+      orderDao.updateAskLimitCoinOrderHistoryExpired();
     }
 
     int coinOwnCount = coinAccountList.size();
@@ -57,8 +59,9 @@ public class BidTrader {
           ownCoin.remove(market);
           break;
         }
+        orderDao.updateCoinOrderHistoryExpiredByUuid(orderHistory.getUuid());
 
-        log.info("[익절매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 이득금액 : {}", market,
+        log.info("[익절매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 이득금액 : {}, 차트종류 : {}", market,
             String.format("%,.2f",
                 (Double.parseDouble(orderHistory.getPrice()) / (
                     Double.parseDouble(orderHistory.getProfitRate()) - 0.0005d))
@@ -74,7 +77,8 @@ public class BidTrader {
                     Double.parseDouble(orderHistory.getProfitRate()) - 0.0005d))
                     * Double.parseDouble(
                     orderHistory.getVolume())
-            )
+            ),
+            orderHistory.getChartType()
         );
         ownCoin.remove(market);
       }
@@ -84,21 +88,21 @@ public class BidTrader {
         return;
       }
 
-      List<String> askCoinList = quotationService.getBidCoinList(krw);
-      if (askCoinList.isEmpty()) {
+      Map<String, String> askCoinMap = quotationService.getBidCoinList(krw);
+      if (askCoinMap.isEmpty()) {
         return;
       }
 
       double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
       log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
 
-      for (String market : askCoinList) {
+      for (String market : askCoinMap.keySet()) {
         if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
             .contains(market)) {
           continue;
         }
 
-        Order order = orderService.bidPriceCoin(market,
+        Order order = orderService.bidPriceCoin(market, askCoinMap.get(market),
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         if (order.isSuccess()) {
           coinOwnCount++;

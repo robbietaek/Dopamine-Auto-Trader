@@ -19,11 +19,11 @@ public class OrderService {
 
   private final OrderDao orderDao;
 
-  public Order bidPriceCoin(String market, double price) {
+  public Order bidPriceCoin(String market, String chartType, double price) {
     Order order = OrderRequestManager.orderCoin(market, OrderSide.BID, null, price,
         OrderType.PRICE);
     if (order.isSuccess()) {
-      orderDao.insertOrderInformation(order);
+      orderDao.insertOrderInformationWithChartType(order, chartType);
     }
     return order;
   }
@@ -70,13 +70,12 @@ public class OrderService {
     return order;
   }
 
-  public Order askLimitCoin(String market, String volume, double price, String historyUuid) {
+  public Order askLimitCoin(String market, String chartType, String volume, double price) {
     Order order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, price,
         OrderType.LIMIT);
     if (order.isSuccess()) {
-      orderDao.updateAskOrder(market);
-      orderDao.insertOrderInformation(order);
-      orderDao.updateBidOrder(historyUuid);
+      orderDao.updateBidPriceCoinOrderHistoryExpired(market);
+      orderDao.insertOrderInformationWithChartType(order, chartType);
     }
     return order;
   }

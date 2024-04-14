@@ -3,7 +3,7 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dopamine.trade.dao.OrderDao">
 
-  <insert id="insertOrderInformation" parameterType="com.dopamine.api_call.model.response.order.order.Order">
+  <insert id="insertOrderInformation">
     INSERT INTO
       tb_coin_order_history
     (
@@ -33,7 +33,39 @@
     )
   </insert>
 
-  <update id="updateAskOrder" parameterType="String">
+  <insert id="insertOrderInformationWithChartType">
+    INSERT INTO
+      tb_coin_order_history
+    (
+      uuid
+      , order_side
+      , order_type
+      , market
+      , price
+      , volume
+      , order_time
+      , chart_type
+      , profit_rate
+      , loss_rate
+      , time_limit
+    )
+    VALUES
+    (
+      #{order.uuid}
+      , #{order.side}
+      , #{order.ordType}
+      , #{order.market}
+      , #{order.price}
+      , #{order.volume}
+      , NOW()
+      , #{chartType}
+      , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'profit_rate')
+      , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'loss_rate')
+      , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'time_limit')
+    )
+  </insert>
+
+  <update id="updateBidPriceCoinOrderHistoryExpired" parameterType="String">
     UPDATE
       tb_coin_order_history
     SET
@@ -41,19 +73,27 @@
     WHERE
       market = #{market}
     AND
-      order_type = 'bid'
+      order_type = 'price'
     AND
-      order_side = 'limit'
-    AND
-      order_time <![CDATA[<=]]> NOW()
+      order_side = 'bid'
   </update>
 
-  <update id="updateBidOrder" parameterType="String">
+  <update id="updateAskLimitCoinOrderHistoryExpired">
     UPDATE
       tb_coin_order_history
     SET
-      ask_order = true
-      , is_expired = true
+      is_expired = true
+    WHERE
+      order_type = 'limit'
+    AND
+      order_side = 'ask'
+  </update>
+
+  <update id="updateCoinOrderHistoryExpiredByUuid" parameterType="String">
+    UPDATE
+      tb_coin_order_history
+    SET
+      is_expired = true
     WHERE
       "uuid" = #{uuid}
   </update>
@@ -62,7 +102,7 @@
     UPDATE
       tb_coin_order_history
     SET
-      order_cancel = true
+      is_canceled = true
       , is_expired = true
     WHERE
       "uuid" = #{uuid}
@@ -77,11 +117,11 @@
       , price
       , volume
       , order_time
+      , chart_type
       , profit_rate
       , loss_rate
       , time_limit
-      , order_cancel
-      , ask_order
+      , is_canceled
       , is_expired
     FROM
       tb_coin_order_history
@@ -92,7 +132,7 @@
     AND
       order_type = #{orderType}
     AND
-      order_cancel = false
+      is_canceled = false
     AND
       is_expired = false
     ORDER BY
@@ -109,11 +149,11 @@
       , price
       , volume
       , order_time
+      , chart_type
       , profit_rate
       , loss_rate
       , time_limit
-      , order_cancel
-      , ask_order
+      , is_canceled
       , is_expired
     FROM
       tb_coin_order_history
@@ -121,8 +161,6 @@
       order_side = 'bid'
     AND
       order_type = 'price'
-    AND
-      ask_order = false
     AND
       is_expired = false
     AND

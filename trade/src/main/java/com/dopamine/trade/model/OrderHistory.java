@@ -18,11 +18,11 @@ public class OrderHistory implements Serializable {
   private String price;
   private String volume;
   private LocalDateTime orderTime;
+  private String chartType;
   private String profitRate;
   private String lossRate;
   private String timeLimit;
-  private boolean orderCancel;
-  private boolean askOrder;
+  private boolean isCanceled;
   private boolean isExpired;
 
 }
