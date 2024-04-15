@@ -73,7 +73,7 @@ public class CandleResearchService {
       double highPriceSubLowPrice = Math.abs(twoMinuteHighPrice - twoMinuteLowPrice);
       double tradePriceSubOpeningPrice = Math.abs(twoMinuteTradePrice - twoMinuteOpeningPrice);
 
-      if (highPriceSubLowPrice * 0.8 <= tradePriceSubOpeningPrice) {
+      if (highPriceSubLowPrice * 0.7 <= tradePriceSubOpeningPrice) {
         isChart = true;
       }
     }
@@ -103,7 +103,7 @@ public class CandleResearchService {
 
         if (highPriceSubTradePrice > openingPriceSubLowPrice
             && highPriceSubLowPrice * 0.4 >= highPriceSubtradePrice
-            && highPriceSubLowPrice * 0.3 <= tradePriceSubOpeningPrice) {
+            && highPriceSubLowPrice * 0.2 <= tradePriceSubOpeningPrice) {
           isChart = true;
         }
       }

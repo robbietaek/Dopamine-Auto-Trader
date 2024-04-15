@@ -41,7 +41,8 @@ public class QuotationService {
 
     List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
             bidCoinList).stream()
-        .sorted(Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed()).toList();
+        .sorted(Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed()).limit(30)
+        .toList();
 
     Map<String, String> coinNameChartTypeMap = new LinkedHashMap<>();
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
