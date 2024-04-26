@@ -168,7 +168,7 @@ public final class OrderRequestManager {
     params.put("ord_type", ordType.getValue());
 
     // 시장가 주문(매수)
-    if (ordType.equals(OrderType.PRICE)) {
+    if (ordType.equals(OrderType.PRICE) && side.equals(OrderSide.BID)) {
       //시장가 매수 주문의 경우 ord_type을 price로 설정하고 volume을 null 혹은 제외해야됩니다.
       params.put("price", CalcUnit.exchangePriceVolumeUnit(market, price).get("price"));
     }
@@ -177,8 +177,13 @@ public final class OrderRequestManager {
       params.put("price", String.valueOf(price));
       params.put("volume", volume);
     }
+    // 최유리 주문(매수)
+    else if (ordType.equals(OrderType.BEST) && side.equals(OrderSide.BID)) {
+      params.put("price", CalcUnit.exchangePriceVolumeUnit(market, price).get("price"));
+      params.put("time_in_force", "fok");
+    }
     //시장가 주문(매도)
-    else if (ordType.equals(OrderType.MARKET)) {
+    else if (ordType.equals(OrderType.MARKET) && side.equals(OrderSide.ASK)) {
       //시장가 매도 주문의 경우 ord_type을 market로 설정하고 price을 null 혹은 제외해야됩니다.
       params.put("volume", volume);
     }

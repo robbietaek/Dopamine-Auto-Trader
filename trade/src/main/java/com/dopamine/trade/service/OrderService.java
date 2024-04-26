@@ -38,6 +38,15 @@ public class OrderService {
     return order;
   }
 
+  public Order bidFokCoin(String market, String chartType, double price) {
+    Order order = OrderRequestManager.orderCoin(market, OrderSide.BID, null, price,
+        OrderType.BEST);
+    if (order.isSuccess()) {
+      orderDao.insertOrderInformationWithChartType(order, chartType);
+    }
+    return order;
+  }
+
   public Order askMarketCoin(String market, String volume, String cancelUuid) {
     Cancel cancelOrder = cancelOrder(cancelUuid);
     if (!cancelOrder.isSuccess()) {

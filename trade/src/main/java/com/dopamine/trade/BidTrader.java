@@ -89,6 +89,7 @@ public class BidTrader {
       }
 
       Map<String, String> askCoinMap = quotationService.getBidCoinList(krw);
+
       if (askCoinMap.isEmpty()) {
         return;
       }
@@ -102,7 +103,7 @@ public class BidTrader {
           continue;
         }
 
-        Order order = orderService.bidPriceCoin(market, askCoinMap.get(market),
+        Order order = orderService.bidFokCoin(market, askCoinMap.get(market),
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         if (order.isSuccess()) {
           coinOwnCount++;

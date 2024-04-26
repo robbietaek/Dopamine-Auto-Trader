@@ -73,7 +73,7 @@
     WHERE
       market = #{market}
     AND
-      order_type = 'price'
+      (order_type = 'price' OR order_type = 'limit' OR order_type = 'best')
     AND
       order_side = 'bid'
   </update>
@@ -160,7 +160,7 @@
     WHERE
       order_side = 'bid'
     AND
-      order_type = 'price'
+      (order_type = 'price' OR order_type = 'limit' OR order_type = 'best')
     AND
       is_expired = false
     AND

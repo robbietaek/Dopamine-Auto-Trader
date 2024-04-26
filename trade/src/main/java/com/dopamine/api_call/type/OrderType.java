@@ -4,7 +4,8 @@ public enum OrderType {
 
   LIMIT("limit"),
   PRICE("price"),
-  MARKET("market");
+  MARKET("market"),
+  BEST("best");
 
   private final String value;
 

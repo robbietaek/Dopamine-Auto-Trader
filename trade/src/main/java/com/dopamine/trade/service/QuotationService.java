@@ -41,11 +41,15 @@ public class QuotationService {
 
     List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
             bidCoinList).stream()
-        .sorted(Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed()).limit(30)
-        .toList();
+        .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed()).toList();
 
     Map<String, String> coinNameChartTypeMap = new LinkedHashMap<>();
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
+    
+    if (currentPriceList.stream().filter(price -> price.getChange().equals("RISE")).count()
+        < currentPriceList.size() * 0.7) {
+      return coinNameChartTypeMap;
+    }
 
     for (CurrentPrice currentPrice : currentPriceList) {
       if (currentPrice.getTradePrice() > 1000000d) {
@@ -57,10 +61,6 @@ public class QuotationService {
       }
 
       String chartType = candleResearchService.getPositiveChartType(currentPrice.getMarket());
-
-      if (chartType.equals("NONE")) {
-        continue;
-      }
 
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
           currentPrice.getMarket());
