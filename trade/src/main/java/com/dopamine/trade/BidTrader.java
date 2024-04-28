@@ -105,7 +105,6 @@ public class BidTrader {
         Order order = orderService.bidFokCoin(market, askCoinMap.get(market),
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         if (order.isSuccess()) {
-          log.info("[구매완료] : 코인명 : {}", order.getMarket());
           coinOwnCount++;
           krw = accountService.getKRWStatus();
           ownCoin.add(market);

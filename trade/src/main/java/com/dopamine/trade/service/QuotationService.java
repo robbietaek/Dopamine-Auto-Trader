@@ -7,7 +7,6 @@ import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.order.available.OrderAvailable;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
-import com.dopamine.api_call.model.response.statistics.UpbitMarketIndexCandle;
 import com.dopamine.common.service.CommonService;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -46,15 +45,7 @@ public class QuotationService {
     List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
         bidCoinList);
 
-    List<UpbitMarketIndexCandle> upbitMarketIndexCandleList = statisticsService.getOneDayUpbitMarektIndexCandleList();
-    double currentTradePrice = upbitMarketIndexCandleList.get(0).getTradePrice();
-    double fiveMinuteBeforeTradePrice = upbitMarketIndexCandleList.get(1).getTradePrice();
-
-    if (currentTradePrice < fiveMinuteBeforeTradePrice) {
-      log.info("[주문대기] 현재 UBMI 차트 값 : {}, 5분 전 UBMI 차트 값 : {}", currentTradePrice,
-          fiveMinuteBeforeTradePrice);
-      return coinNameChartTypeMap;
-    }
+    boolean isPositiveChart = statisticsService.isPositiveChart();
 
     long totalCount = currentPriceList.size();
     long currentRiseCoinCount = currentPriceList.stream()
@@ -62,8 +53,11 @@ public class QuotationService {
     double riseCoinPercent = Double.parseDouble(
         commonService.getConfig("BID", "rise_coin_percent"));
 
-    if (currentRiseCoinCount < totalCount * riseCoinPercent) {
-      log.info("[주문대기] 전체 코인 수량 : {}, 상승 코인 수량 : {}, 설정 퍼센트 : {}", totalCount, currentRiseCoinCount,
+    if (currentRiseCoinCount < totalCount * riseCoinPercent || !isPositiveChart) {
+      log.info("[주문보류] UBMI 차트분석 : {}, 전체 코인 수량 : {}, 상승 코인 수량 : {}, 설정 퍼센트 : {}",
+          isPositiveChart ? "상승차트" : "하락차트",
+          totalCount,
+          currentRiseCoinCount,
           riseCoinPercent);
       return coinNameChartTypeMap;
     }

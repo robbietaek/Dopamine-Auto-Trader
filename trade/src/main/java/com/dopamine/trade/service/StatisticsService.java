@@ -65,5 +65,36 @@ public class StatisticsService {
     return topSortedMarket.getTopThirtyMarketList();
   }
 
+  public boolean isPositiveChart() {
+    boolean isPositive = false;
+    List<UpbitMarketIndexCandle> candleList = getOneDayUpbitMarektIndexCandleList();
+
+    double currentPrice = candleList.get(0).getTradePrice();
+    double beforeTenPrice = candleList.get(2).getTradePrice();
+    double beforeTwentyPrice = candleList.get(4).getTradePrice();
+    double beforeFortyPrice = candleList.get(6).getTradePrice();
+
+    if (beforeFortyPrice < beforeTwentyPrice
+        && beforeTwentyPrice < beforeTenPrice
+        && beforeTenPrice < currentPrice) {
+      // 상승 -> 상승 -> 상승
+      return true;
+    }
+
+    if (beforeFortyPrice < beforeTenPrice
+        && beforeTenPrice < currentPrice) {
+      // 상승 -> 하향 -> 상승
+      return true;
+    }
+
+    if (beforeTwentyPrice < beforeTenPrice
+        && beforeTenPrice < currentPrice) {
+      // 하향 -> 상승 -> 상승
+      return true;
+    }
+
+    return isPositive;
+  }
+
 
 }
