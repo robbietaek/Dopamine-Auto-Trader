@@ -33,17 +33,15 @@ public class BidTrader {
 
   public static Set<String> ownCoin = new HashSet<>();
 
-
   @Scheduled(fixedDelay = 2383)
   public void bidTrader() {
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
     List<String> coinOwnList = coinAccountList.stream().map(Accounts::getCurrency).toList();
 
-    if (ownCoin.isEmpty()) {
-      ownCoin.addAll(coinOwnList);
-      double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
-      log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
+    if (ownCoin.isEmpty() && coinOwnList.isEmpty()) {
       orderDao.updateAskLimitCoinOrderHistoryExpired();
+    } else if (ownCoin.isEmpty() && coinOwnList.size() > 0) {
+      ownCoin.addAll(coinOwnList);
     }
 
     int coinOwnCount = coinAccountList.size();
@@ -80,6 +78,8 @@ public class BidTrader {
             ),
             orderHistory.getChartType()
         );
+        double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
+        log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
         ownCoin.remove(market);
       }
 
@@ -95,17 +95,17 @@ public class BidTrader {
       }
 
       double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
-      log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
 
       for (String market : askCoinMap.keySet()) {
         if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
             .contains(market)) {
           continue;
         }
-
+        krw = accountService.getKRWStatus();
         Order order = orderService.bidFokCoin(market, askCoinMap.get(market),
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         if (order.isSuccess()) {
+          log.info("[구매완료] : 코인명 : {}", order.getMarket());
           coinOwnCount++;
           krw = accountService.getKRWStatus();
           ownCoin.add(market);

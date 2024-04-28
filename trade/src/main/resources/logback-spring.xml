@@ -20,8 +20,8 @@
       <fileNamePattern>${LOG_DIR}/auto-trade-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
       <timeBasedFileNamingAndTriggeringPolicy
         class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-        <!-- or whenever the file size reaches 100MB -->
-        <maxFileSize>100MB</maxFileSize>
+        <!-- or whenever the file size reaches 1000MB -->
+        <maxFileSize>1000MB</maxFileSize>
       </timeBasedFileNamingAndTriggeringPolicy>
     </rollingPolicy>
     <encoder>

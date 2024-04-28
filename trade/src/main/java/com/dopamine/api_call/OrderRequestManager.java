@@ -74,7 +74,7 @@ public final class OrderRequestManager {
       orderAvailable = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"),
           OrderAvailable.class);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
 
     return orderAvailable;
@@ -104,7 +104,7 @@ public final class OrderRequestManager {
       individualOrderStatus = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"),
           IndividualOrderStatus.class);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
     return individualOrderStatus;
   }
@@ -148,7 +148,7 @@ public final class OrderRequestManager {
           new TypeReference<List<NumerousOrderStatus>>() {
           });
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
 
     return numerousOrderStatus;
@@ -212,7 +212,7 @@ public final class OrderRequestManager {
       HttpEntity entity = response.getEntity();
       order = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Order.class);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
 
     return order;
@@ -241,7 +241,7 @@ public final class OrderRequestManager {
       cancel = objectMapper.readValue(EntityUtils.toString(entity, "UTF-8"), Cancel.class);
       Thread.sleep(1000);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
 
     return cancel;

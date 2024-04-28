@@ -1,10 +1,13 @@
 package com.dopamine.trade.service;
 
+import static com.dopamine.tool.ShuffleStream.toShuffledList;
+
 import com.dopamine.api_call.OrderRequestManager;
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.order.available.OrderAvailable;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
+import com.dopamine.api_call.model.response.statistics.UpbitMarketIndexCandle;
 import com.dopamine.common.service.CommonService;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -22,6 +25,7 @@ public class QuotationService {
 
   private final CommonService commonService;
   private final CandleResearchService candleResearchService;
+  private final StatisticsService statisticsService;
 
   public Map<String, String> getBidCoinList(Double krw) {
     List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList();
@@ -38,19 +42,45 @@ public class QuotationService {
         bidCoinList.add(marketCode.getMarket());
       }
     }
-
-    List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
-            bidCoinList).stream()
-        .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed()).toList();
-
     Map<String, String> coinNameChartTypeMap = new LinkedHashMap<>();
-    int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
-    
-    if (currentPriceList.stream().filter(price -> price.getChange().equals("RISE")).count()
-        < currentPriceList.size() * 0.7) {
+    List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
+        bidCoinList);
+
+    List<UpbitMarketIndexCandle> upbitMarketIndexCandleList = statisticsService.getOneDayUpbitMarektIndexCandleList();
+    double currentTradePrice = upbitMarketIndexCandleList.get(0).getTradePrice();
+    double fiveMinuteBeforeTradePrice = upbitMarketIndexCandleList.get(1).getTradePrice();
+
+    if (currentTradePrice < fiveMinuteBeforeTradePrice) {
+      log.info("[주문대기] 현재 UBMI 차트 값 : {}, 5분 전 UBMI 차트 값 : {}", currentTradePrice,
+          fiveMinuteBeforeTradePrice);
       return coinNameChartTypeMap;
     }
 
+    long totalCount = currentPriceList.size();
+    long currentRiseCoinCount = currentPriceList.stream()
+        .filter(price -> price.getChange().equals("RISE")).count();
+    double riseCoinPercent = Double.parseDouble(
+        commonService.getConfig("BID", "rise_coin_percent"));
+
+    if (currentRiseCoinCount < totalCount * riseCoinPercent) {
+      log.info("[주문대기] 전체 코인 수량 : {}, 상승 코인 수량 : {}, 설정 퍼센트 : {}", totalCount, currentRiseCoinCount,
+          riseCoinPercent);
+      return coinNameChartTypeMap;
+    }
+
+    List<String> topThirtyMarketList = statisticsService.getTopThirtyMarketList();
+    currentPriceList = currentPriceList.stream()
+        .filter(currentPrice -> !topThirtyMarketList.contains(currentPrice.getMarket())).toList();
+
+    currentPriceList = currentPriceList.stream()
+        .filter(currentPrice -> currentPrice.getChange().equals("RISE"))
+        .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed())
+        .limit(10)
+        .sorted(Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed())
+        .limit(5)
+        .collect(toShuffledList());
+
+    int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
     for (CurrentPrice currentPrice : currentPriceList) {
       if (currentPrice.getTradePrice() > 1000000d) {
         continue;
@@ -89,6 +119,5 @@ public class QuotationService {
     }
     return coinNameChartTypeMap;
   }
-
 
 }

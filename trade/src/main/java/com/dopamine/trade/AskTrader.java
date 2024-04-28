@@ -71,6 +71,8 @@ public class AskTrader {
       if (avgBuyPrice * askLossRateValue > currentBidPrice) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
             "limit");
+        double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
+        log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
         Order order = orderService.askMarketCoin(account.getCurrency(),
             Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
@@ -99,11 +101,12 @@ public class AskTrader {
           LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
             "limit");
+        double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
+        log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
         Order order = orderService.askMarketCoin(account.getCurrency(),
             Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
                 : account.getLocked(), askOrderHistory.getUuid());
-
         if (order.isSuccess()) {
           log.info("[시간초과] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 손해금액 : {}, 시간설정값 : {}초, 차트종류 : {}",
               order.getMarket(),

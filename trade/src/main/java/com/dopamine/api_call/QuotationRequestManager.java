@@ -38,7 +38,7 @@ public final class QuotationRequestManager {
           new TypeReference<List<MarketCode>>() {
           });
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
 
     return marketCodeList;
@@ -70,7 +70,7 @@ public final class QuotationRequestManager {
           new TypeReference<List<CurrentPrice>>() {
           });
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
 
     return currentPrice;
@@ -106,7 +106,7 @@ public final class QuotationRequestManager {
           new TypeReference<List<OrderBook>>() {
           });
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
 
     return orderBookList;
@@ -135,7 +135,7 @@ public final class QuotationRequestManager {
           });
       Thread.sleep(50);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
     return minuteCancleList;
   }

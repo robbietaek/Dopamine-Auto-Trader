@@ -52,7 +52,7 @@ public final class AccountRequestManager {
           });
 
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
 
     return accounts;
