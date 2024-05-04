@@ -78,8 +78,6 @@ public class BidTrader {
             ),
             orderHistory.getChartType()
         );
-        double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
-        log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
         ownCoin.remove(market);
       }
 
@@ -89,22 +87,20 @@ public class BidTrader {
       }
 
       Map<String, String> askCoinMap = quotationService.getBidCoinList(krw);
-
       if (askCoinMap.isEmpty()) {
         return;
       }
-
-      double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
 
       for (String market : askCoinMap.keySet()) {
         if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
             .contains(market)) {
           continue;
         }
-        krw = accountService.getKRWStatus();
+
         Order order = orderService.bidFokCoin(market, askCoinMap.get(market),
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
-        if (order.isSuccess()) {
+        double afterKrw = accountService.getKRWStatus();
+        if (order.isSuccess() && krw != afterKrw) {
           coinOwnCount++;
           krw = accountService.getKRWStatus();
           ownCoin.add(market);

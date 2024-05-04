@@ -8,11 +8,12 @@ import com.dopamine.api_call.model.response.order.available.OrderAvailable;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
 import com.dopamine.common.service.CommonService;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,52 +28,39 @@ public class QuotationService {
   private final StatisticsService statisticsService;
 
   public Map<String, String> getBidCoinList(Double krw) {
-    List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList();
-    List<String> bidCoinList = new LinkedList<>();
+    List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
+        .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
-    for (MarketCode marketCode : marketCodeList) {
-      //소수 계정에 집중되어있음
-      boolean concentrationOfSmallAccounts = marketCode.getMarketEvent().getCaution()
-          .isConcentrationOfSmallAccounts();
-
-      if (!concentrationOfSmallAccounts
-          && marketCode.getMarket()
-          .startsWith("KRW")) {
-        bidCoinList.add(marketCode.getMarket());
-      }
-    }
     Map<String, String> coinNameChartTypeMap = new LinkedHashMap<>();
     List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
-        bidCoinList);
+            marketCodeList.stream().map(MarketCode::getMarket).collect(Collectors.toList())).stream()
+        .sorted(
+            Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed())
+        .collect(Collectors.toList());
 
-    boolean isPositiveChart = statisticsService.isPositiveChart();
-
-    long totalCount = currentPriceList.size();
+    int totalCount = currentPriceList.size();
     long currentRiseCoinCount = currentPriceList.stream()
         .filter(price -> price.getChange().equals("RISE")).count();
     double riseCoinPercent = Double.parseDouble(
         commonService.getConfig("BID", "rise_coin_percent"));
-
-    if (currentRiseCoinCount < totalCount * riseCoinPercent || !isPositiveChart) {
-      log.info("[주문보류] UBMI 차트분석 : {}, 전체 코인 수량 : {}, 상승 코인 수량 : {}, 설정 퍼센트 : {}",
-          isPositiveChart ? "상승차트" : "하락차트",
-          totalCount,
-          currentRiseCoinCount,
-          riseCoinPercent);
+    if (currentRiseCoinCount < totalCount * riseCoinPercent) {
       return coinNameChartTypeMap;
     }
 
-    List<String> topThirtyMarketList = statisticsService.getTopThirtyMarketList();
-    currentPriceList = currentPriceList.stream()
-        .filter(currentPrice -> !topThirtyMarketList.contains(currentPrice.getMarket())).toList();
-
-    currentPriceList = currentPriceList.stream()
-        .filter(currentPrice -> currentPrice.getChange().equals("RISE"))
-        .sorted(Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed())
-        .limit(10)
-        .sorted(Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed())
-        .limit(5)
-        .collect(toShuffledList());
+    String valueLevel = commonService.getConfig("BID", "value_level").trim();
+    if (valueLevel.equals("상위")) {
+      currentPriceList = new ArrayList<>(
+          currentPriceList.subList(0, (int) ((double) totalCount * (1d / 3d))));
+    } else if (valueLevel.equals("중위")) {
+      currentPriceList = new ArrayList<>(
+          currentPriceList.subList((int) ((double) totalCount * (1d / 3d)),
+              (int) ((double) totalCount * (2d / 3d))));
+    } else if (valueLevel.equals("하위")) {
+      currentPriceList = new ArrayList<>(
+          currentPriceList.subList((int) ((double) totalCount * (2d / 3d)),
+              (int) ((double) totalCount * (3d / 3d))));
+    }
+    currentPriceList = currentPriceList.stream().collect(toShuffledList());
 
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
     for (CurrentPrice currentPrice : currentPriceList) {

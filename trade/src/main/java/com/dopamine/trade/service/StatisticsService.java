@@ -3,7 +3,6 @@ package com.dopamine.trade.service;
 import com.dopamine.api_call.model.response.statistics.TopSortedMarket;
 import com.dopamine.api_call.model.response.statistics.UpbitMarketIndex;
 import com.dopamine.api_call.model.response.statistics.UpbitMarketIndexCandle;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +20,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class StatisticsService {
 
   private final RestTemplate restTemplate;
-  private final ObjectMapper objectMapper;
 
   public UpbitMarketIndex getUpbitMarketIndex() {
     URI uri = UriComponentsBuilder
@@ -64,37 +62,5 @@ public class StatisticsService {
     TopSortedMarket topSortedMarket = responseEntity.getBody();
     return topSortedMarket.getTopThirtyMarketList();
   }
-
-  public boolean isPositiveChart() {
-    boolean isPositive = false;
-    List<UpbitMarketIndexCandle> candleList = getOneDayUpbitMarektIndexCandleList();
-
-    double currentPrice = candleList.get(0).getTradePrice();
-    double beforeTenPrice = candleList.get(2).getTradePrice();
-    double beforeTwentyPrice = candleList.get(4).getTradePrice();
-    double beforeFortyPrice = candleList.get(6).getTradePrice();
-
-    if (beforeFortyPrice < beforeTwentyPrice
-        && beforeTwentyPrice < beforeTenPrice
-        && beforeTenPrice < currentPrice) {
-      // 상승 -> 상승 -> 상승
-      return true;
-    }
-
-    if (beforeFortyPrice < beforeTenPrice
-        && beforeTenPrice < currentPrice) {
-      // 상승 -> 하향 -> 상승
-      return true;
-    }
-
-    if (beforeTwentyPrice < beforeTenPrice
-        && beforeTenPrice < currentPrice) {
-      // 하향 -> 상승 -> 상승
-      return true;
-    }
-
-    return isPositive;
-  }
-
 
 }

@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AskTrader {
 
-
   private final AccountService accountService;
   private final OrderService orderService;
   private final CommonService commonService;
@@ -71,8 +70,6 @@ public class AskTrader {
       if (avgBuyPrice * askLossRateValue > currentBidPrice) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
             "limit");
-        double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
-        log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
         Order order = orderService.askMarketCoin(account.getCurrency(),
             Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
@@ -101,8 +98,6 @@ public class AskTrader {
           LocalDateTime.now().minusSeconds(askTimeoutLimitValue))) {
         OrderHistory orderHistory = orderDao.selectLastOrderHistory(account.getCurrency(), "ask",
             "limit");
-        double currentTotalAccountKrw = accountService.getCurrentTotalAccountKrw();
-        log.info("[자산가치] : {}원", String.format("%,.0f", currentTotalAccountKrw));
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
         Order order = orderService.askMarketCoin(account.getCurrency(),
             Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
