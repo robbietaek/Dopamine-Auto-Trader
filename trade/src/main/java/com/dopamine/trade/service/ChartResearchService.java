@@ -349,7 +349,7 @@ public class ChartResearchService {
     return rsi;
   }
 
-  public List<Double> isBollingerBandByMinutes(List<Minute> minuteCandleList, int period,
+  public List<Double> getBollingerBandByMinutes(List<Minute> minuteCandleList, int period,
       int multiplier) {
 
     List<Double> tradePriceList = minuteCandleList.subList(0, period).stream()

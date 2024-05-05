@@ -85,11 +85,11 @@ public class QuotationService {
           currentPrice.getMarket(), "240",
           "1");
 
-      if (minuteCandleList == null) {
+      if (minuteCandleList == null || minuteCandleList.isEmpty()) {
         continue;
       }
 
-      List<Double> bollingerBandValue = chartResearchService.isBollingerBandByMinutes(
+      List<Double> bollingerBandValue = chartResearchService.getBollingerBandByMinutes(
           minuteCandleList, 20,
           2);
       boolean isBottomBollingerBandValue =

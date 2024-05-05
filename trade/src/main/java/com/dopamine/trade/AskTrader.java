@@ -67,11 +67,11 @@ public class AskTrader {
       List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
           currentPrice.getMarket(), "240",
           "1");
-      if (minuteCandleList == null) {
+      if (minuteCandleList == null || minuteCandleList.isEmpty()) {
         continue;
       }
       double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 14);
-      List<Double> bollingerBandValue = chartResearchService.isBollingerBandByMinutes(
+      List<Double> bollingerBandValue = chartResearchService.getBollingerBandByMinutes(
           minuteCandleList,
           20, 2);
       boolean isTopBollingerBandValue =
