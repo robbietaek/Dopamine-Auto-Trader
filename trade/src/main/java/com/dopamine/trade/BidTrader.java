@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -48,17 +47,12 @@ public class BidTrader {
         return;
       }
 
-      Map<String, List<String>> askCoinMap = quotationService.getBidCoinList(krw);
+      Map<String, List<String>> askCoinMap = quotationService.getBidCoinList(krw, coinAccountList);
       if (askCoinMap.isEmpty()) {
         return;
       }
 
       for (String market : askCoinMap.keySet()) {
-        if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
-            .contains(market)) {
-          continue;
-        }
-
         Order order = orderService.bidFokCoin(market,
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         double afterKrw = accountService.getKRWStatus();

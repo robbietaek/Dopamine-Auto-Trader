@@ -4,6 +4,7 @@ import static com.dopamine.tool.ShuffleStream.toShuffledList;
 
 import com.dopamine.api_call.OrderRequestManager;
 import com.dopamine.api_call.QuotationRequestManager;
+import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.available.OrderAvailable;
 import com.dopamine.api_call.model.response.quotation.candles.minute.Minute;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
@@ -28,7 +29,7 @@ public class QuotationService {
   private final ChartResearchService chartResearchService;
   private final StatisticsService statisticsService;
 
-  public Map<String, List<String>> getBidCoinList(Double krw) {
+  public Map<String, List<String>> getBidCoinList(Double krw, List<Accounts> coinAccountList) {
     List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
         .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
@@ -67,18 +68,26 @@ public class QuotationService {
 
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
     for (CurrentPrice currentPrice : currentPriceList) {
-
-      if (marketMap.size() > coinOwnLimit * 2) {
-        break;
+      if (!marketMap.isEmpty()) {
+        return marketMap;
       }
 
       if (currentPrice.getTradePrice() > 1000000d) {
         continue;
       }
 
+      if (coinAccountList.stream().map(Accounts::getCurrency).collect(Collectors.toList())
+          .contains(currentPrice.getMarket())) {
+        continue;
+      }
+
       List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
           currentPrice.getMarket(), "240",
           "1");
+
+      if (minuteCandleList == null) {
+        continue;
+      }
 
       List<Double> bollingerBandValue = chartResearchService.isBollingerBandByMinutes(
           minuteCandleList, 20,

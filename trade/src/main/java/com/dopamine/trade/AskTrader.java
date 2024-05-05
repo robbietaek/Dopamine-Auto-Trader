@@ -67,6 +67,9 @@ public class AskTrader {
       List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
           currentPrice.getMarket(), "240",
           "1");
+      if (minuteCandleList == null) {
+        continue;
+      }
       double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 14);
       List<Double> bollingerBandValue = chartResearchService.isBollingerBandByMinutes(
           minuteCandleList,
@@ -81,7 +84,7 @@ public class AskTrader {
                 : account.getLocked());
         if (order.isSuccess()) {
           log.info("[익절매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 차액 : {}, 익절 설정값 : {}",
-              order.getMarket(),
+              order.getMarket().replace("KRW-", ""),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
                   currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
@@ -103,7 +106,7 @@ public class AskTrader {
                 : account.getLocked());
         if (order.isSuccess()) {
           log.info("[차트매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 차액 : {}, RSI : {}, 상단 볼린저밴드 값 : {}",
-              order.getMarket(),
+              order.getMarket().replace("KRW-", ""),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
                   currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
@@ -127,7 +130,7 @@ public class AskTrader {
 
         if (order.isSuccess()) {
           log.info("[손절매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 차액 : {}, 손절설정값 : {}",
-              order.getMarket(),
+              order.getMarket().replace("KRW-", ""),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
                   currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
@@ -151,7 +154,7 @@ public class AskTrader {
                 : account.getLocked());
         if (order.isSuccess()) {
           log.info("[시간초과] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 차액 : {}, 시간설정값 : {}초",
-              order.getMarket(),
+              order.getMarket().replace("KRW-", ""),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
                   currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
