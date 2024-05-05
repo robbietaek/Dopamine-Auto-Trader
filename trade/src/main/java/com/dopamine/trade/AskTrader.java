@@ -34,7 +34,7 @@ public class AskTrader {
   private final ChartResearchService chartResearchService;
   private final OrderDao orderDao;
 
-  @Scheduled(fixedDelay = 1571)
+  @Scheduled(fixedDelay = 1771)
   public void askTrader() {
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
     if (coinAccountList.size() == 0) {
