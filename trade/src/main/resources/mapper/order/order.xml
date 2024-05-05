@@ -17,6 +17,7 @@
       , profit_rate
       , loss_rate
       , time_limit
+      , is_expired
     )
     VALUES
     (
@@ -30,6 +31,7 @@
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'profit_rate')
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'loss_rate')
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'time_limit')
+      , true
     )
   </insert>
 
@@ -48,6 +50,7 @@
       , profit_rate
       , loss_rate
       , time_limit
+      , is_expired
     )
     VALUES
     (
@@ -62,6 +65,7 @@
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'profit_rate')
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'loss_rate')
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'time_limit')
+      , true
     )
   </insert>
 
@@ -134,7 +138,7 @@
     AND
       is_canceled = false
     AND
-      is_expired = false
+      is_expired = true
     ORDER BY
       order_time DESC
     LIMIT 1

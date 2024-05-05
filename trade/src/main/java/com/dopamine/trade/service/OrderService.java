@@ -38,30 +38,13 @@ public class OrderService {
     return order;
   }
 
-  public Order bidFokCoin(String market, String chartType, double price) {
+  public Order bidFokCoin(String market, double price) {
     Order order = OrderRequestManager.orderCoin(market, OrderSide.BID, null, price,
         OrderType.BEST);
-    if (order.isSuccess()) {
-      orderDao.insertOrderInformationWithChartType(order, chartType);
-    }
     return order;
   }
 
-  public Order askMarketCoin(String market, String volume, String cancelUuid) {
-    Cancel cancelOrder = cancelOrder(cancelUuid);
-    if (!cancelOrder.isSuccess()) {
-      for (int i = 0; i < 5; i++) {
-        cancelOrder = cancelOrder(cancelUuid);
-        if (cancelOrder.isSuccess()) {
-          break;
-        }
-      }
-    }
-
-    if (cancelOrder.isSuccess()) {
-      orderDao.updateOrderCancel(cancelUuid);
-    }
-
+  public Order askMarketCoin(String market, String volume) {
     Order order = OrderRequestManager.orderCoin(market, OrderSide.ASK, volume, 0, OrderType.MARKET);
     if (!order.isSuccess()) {
       for (int i = 0; i < 5; i++) {

@@ -1,4 +1,4 @@
-package com.dopamine.trade.type;
+package com.dopamine.trade;
 
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
@@ -21,7 +21,7 @@ public class StatusLogger {
   private final CommonService commonService;
   private final AccountService accountService;
 
-  @Scheduled(fixedRate = 5000)
+  @Scheduled(fixedRate = 10000)
   public void loggingMarketStatus() {
     List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
         .filter(market -> market.getMarket().startsWith("KRW")).toList();

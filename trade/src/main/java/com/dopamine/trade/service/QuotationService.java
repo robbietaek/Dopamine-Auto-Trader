@@ -5,6 +5,7 @@ import static com.dopamine.tool.ShuffleStream.toShuffledList;
 import com.dopamine.api_call.OrderRequestManager;
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.order.available.OrderAvailable;
+import com.dopamine.api_call.model.response.quotation.candles.minute.Minute;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
 import com.dopamine.common.service.CommonService;
@@ -24,14 +25,14 @@ import org.springframework.stereotype.Service;
 public class QuotationService {
 
   private final CommonService commonService;
-  private final CandleResearchService candleResearchService;
+  private final ChartResearchService chartResearchService;
   private final StatisticsService statisticsService;
 
-  public Map<String, String> getBidCoinList(Double krw) {
+  public Map<String, List<String>> getBidCoinList(Double krw) {
     List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
         .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
-    Map<String, String> coinNameChartTypeMap = new LinkedHashMap<>();
+    Map<String, List<String>> marketMap = new LinkedHashMap<>();
     List<CurrentPrice> currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
             marketCodeList.stream().map(MarketCode::getMarket).collect(Collectors.toList())).stream()
         .sorted(
@@ -44,35 +45,53 @@ public class QuotationService {
     double riseCoinPercent = Double.parseDouble(
         commonService.getConfig("BID", "rise_coin_percent"));
     if (currentRiseCoinCount < totalCount * riseCoinPercent) {
-      return coinNameChartTypeMap;
+      return marketMap;
     }
 
     String valueLevel = commonService.getConfig("BID", "value_level").trim();
     if (valueLevel.equals("상위")) {
       currentPriceList = new ArrayList<>(
-          currentPriceList.subList(0, (int) ((double) totalCount * (1d / 3d))));
+          currentPriceList.subList(0, (int) ((double) totalCount * (1d / 3d)))).stream()
+          .collect(toShuffledList());
     } else if (valueLevel.equals("중위")) {
       currentPriceList = new ArrayList<>(
           currentPriceList.subList((int) ((double) totalCount * (1d / 3d)),
-              (int) ((double) totalCount * (2d / 3d))));
+              (int) ((double) totalCount * (2d / 3d)))).stream().collect(toShuffledList());
     } else if (valueLevel.equals("하위")) {
       currentPriceList = new ArrayList<>(
           currentPriceList.subList((int) ((double) totalCount * (2d / 3d)),
-              (int) ((double) totalCount * (3d / 3d))));
+              (int) ((double) totalCount * (3d / 3d)))).stream().collect(toShuffledList());
+    } else {
+      // valueLevel = 전체
     }
-    currentPriceList = currentPriceList.stream().collect(toShuffledList());
 
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
     for (CurrentPrice currentPrice : currentPriceList) {
+
+      if (marketMap.size() > coinOwnLimit * 2) {
+        break;
+      }
+
       if (currentPrice.getTradePrice() > 1000000d) {
         continue;
       }
 
-      if (coinNameChartTypeMap.size() > coinOwnLimit * 2) {
-        break;
+      List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
+          currentPrice.getMarket(), "240",
+          "1");
+
+      List<Double> bollingerBandValue = chartResearchService.isBollingerBandByMinutes(
+          minuteCandleList, 20,
+          2);
+      boolean isBottomBollingerBandValue =
+          minuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
+
+      double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 20);
+      if (rsi >= 30 && !isBottomBollingerBandValue) {
+        continue;
       }
 
-      String chartType = candleResearchService.getPositiveChartType(currentPrice.getMarket());
+      String chartType = chartResearchService.getPositiveChartType(currentPrice.getMarket());
 
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
           currentPrice.getMarket());
@@ -97,9 +116,11 @@ public class QuotationService {
         continue;
       }
 
-      coinNameChartTypeMap.put(currentPrice.getMarket(), chartType);
+      marketMap.put(currentPrice.getMarket(),
+          List.of(String.valueOf(rsi), String.valueOf(bollingerBandValue.get(2)),
+              chartType));
     }
-    return coinNameChartTypeMap;
+    return marketMap;
   }
 
 }
