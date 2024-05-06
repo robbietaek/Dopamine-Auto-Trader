@@ -36,6 +36,10 @@ public class BidTrader {
 
     if (ownCoin.isEmpty() && coinOwnList.size() > 0) {
       ownCoin.addAll(coinOwnList);
+    } else if (ownCoin.size() > 0 && coinOwnList.size() == 0) {
+      ownCoin.clear();
+    } else if (ownCoin.isEmpty() && coinOwnList.isEmpty()) {
+      orderDao.updateOrderIsExpired();
     }
 
     int coinOwnCount = coinAccountList.size();

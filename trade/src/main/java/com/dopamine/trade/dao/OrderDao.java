@@ -23,6 +23,8 @@ public interface OrderDao {
 
   void updateOrderCancel(@Param("uuid") String uuid);
 
+  void updateOrderIsExpired();
+
   OrderHistory selectLastOrderHistory(@Param("market") String market,
       @Param("orderSide") String orderSide, @Param("orderType") String orderType);
 

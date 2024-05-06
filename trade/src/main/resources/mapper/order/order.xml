@@ -65,7 +65,7 @@
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'profit_rate')
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'loss_rate')
       , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'time_limit')
-      , true
+      , false
     )
   </insert>
 
@@ -112,6 +112,15 @@
       "uuid" = #{uuid}
   </update>
 
+  <update id="updateOrderIsExpired">
+    UPDATE
+      tb_coin_order_history
+    SET
+      is_expired = true
+    WHERE
+      order_side = 'bid'
+  </update>
+
   <select id="selectLastOrderHistory" resultType="com.dopamine.trade.model.OrderHistory">
     SELECT
       uuid
@@ -138,7 +147,9 @@
     AND
       is_canceled = false
     AND
-      is_expired = true
+      is_expired = false
+    AND
+      (NOW() - interval'5 seconds') > order_time
     ORDER BY
       order_time DESC
     LIMIT 1

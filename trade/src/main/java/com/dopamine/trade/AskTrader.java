@@ -61,6 +61,10 @@ public class AskTrader {
       OrderHistory bidOrderHistory = orderService.getLastOrder(account.getCurrency(),
           OrderSide.BID.getValue(), OrderType.BEST.getValue());
 
+      if (bidOrderHistory == null) {
+        continue;
+      }
+
       LocalDateTime limitAskOrderTime = bidOrderHistory.getOrderTime();
       Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
 

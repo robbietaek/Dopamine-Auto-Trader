@@ -57,6 +57,7 @@ public class OrderService {
 
     if (order.isSuccess()) {
       orderDao.insertOrderInformation(order);
+      orderDao.updateBidPriceCoinOrderHistoryExpired(market);
     }
 
     return order;
