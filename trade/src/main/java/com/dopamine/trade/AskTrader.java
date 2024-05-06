@@ -5,7 +5,7 @@ import static com.dopamine.trade.BidTrader.ownCoin;
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
-import com.dopamine.api_call.model.response.quotation.candles.minute.Minute;
+import com.dopamine.api_call.model.response.quotation.candle.Candle;
 import com.dopamine.api_call.model.response.quotation.order_book.OrderBook;
 import com.dopamine.api_call.type.OrderSide;
 import com.dopamine.api_call.type.OrderType;
@@ -64,8 +64,8 @@ public class AskTrader {
       LocalDateTime limitAskOrderTime = bidOrderHistory.getOrderTime();
       Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
 
-      List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "240",
+      List<Candle> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
+          currentPrice.getMarket(), "200",
           "1");
       if (minuteCandleList == null || minuteCandleList.isEmpty()) {
         continue;
@@ -99,7 +99,7 @@ public class AskTrader {
 
           ownCoin.remove(account.getCurrency());
         }
-      } else if (rsi >= 70 || isTopBollingerBandValue) {
+      } else if (rsi >= 70 || (avgBuyPrice * 1.002 < currentBidPrice && isTopBollingerBandValue)) {
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
         Order order = orderService.askMarketCoin(account.getCurrency(),
             Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()

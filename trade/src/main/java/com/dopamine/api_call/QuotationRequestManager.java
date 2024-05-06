@@ -1,6 +1,6 @@
 package com.dopamine.api_call;
 
-import com.dopamine.api_call.model.response.quotation.candles.minute.Minute;
+import com.dopamine.api_call.model.response.quotation.candle.Candle;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
 import com.dopamine.api_call.model.response.quotation.order_book.OrderBook;
@@ -112,7 +112,7 @@ public final class QuotationRequestManager {
     return orderBookList;
   }
 
-  public static List<Minute> getMinuteCandleList(String market, String count, String unit) {
+  public static List<Candle> getMinuteCandleList(String market, String count, String unit) {
     OkHttpClient client = new OkHttpClient();
 
     ArrayList<String> queryElements = new ArrayList<>();
@@ -127,15 +127,41 @@ public final class QuotationRequestManager {
         .get()
         .addHeader("accept", "application/json")
         .build();
-    List<Minute> minuteCancleList = new ArrayList<>();
+    List<Candle> minuteCancleList = new ArrayList<>();
     try {
       Response response = client.newCall(request).execute();
       minuteCancleList = objectMapper.readValue(response.body().string(),
-          new TypeReference<List<Minute>>() {
+          new TypeReference<List<Candle>>() {
           });
       Thread.sleep(50);
     } catch (Exception e) {
-      log.error(e.getMessage());
+    }
+    return minuteCancleList;
+  }
+
+  public static List<Candle> getDayCandleList(String market, String count, String unit) {
+    OkHttpClient client = new OkHttpClient();
+
+    ArrayList<String> queryElements = new ArrayList<>();
+    queryElements.add("market=" + market);
+    queryElements.add("count=" + count);
+    queryElements.add("unit=" + unit);
+
+    String queryString = String.join("&", queryElements.toArray(new String[0]));
+
+    Request request = new Request.Builder()
+        .url(serverUrl + "/v1/candles/days?" + queryString)
+        .get()
+        .addHeader("accept", "application/json")
+        .build();
+    List<Candle> minuteCancleList = new ArrayList<>();
+    try {
+      Response response = client.newCall(request).execute();
+      minuteCancleList = objectMapper.readValue(response.body().string(),
+          new TypeReference<List<Candle>>() {
+          });
+      Thread.sleep(50);
+    } catch (Exception e) {
     }
     return minuteCancleList;
   }

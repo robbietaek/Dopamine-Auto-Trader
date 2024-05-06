@@ -47,7 +47,8 @@ public class BidTrader {
         return;
       }
 
-      Map<String, List<String>> askCoinMap = quotationService.getBidCoinList(krw, coinAccountList);
+      Map<String, List<String>> askCoinMap = quotationService.getBidCoinList(krw, coinAccountList,
+          coinOwnLimit - coinOwnCount);
       if (askCoinMap.isEmpty()) {
         return;
       }

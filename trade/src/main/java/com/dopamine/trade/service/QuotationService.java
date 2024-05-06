@@ -6,7 +6,7 @@ import com.dopamine.api_call.OrderRequestManager;
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.available.OrderAvailable;
-import com.dopamine.api_call.model.response.quotation.candles.minute.Minute;
+import com.dopamine.api_call.model.response.quotation.candle.Candle;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
 import com.dopamine.common.service.CommonService;
@@ -27,9 +27,9 @@ public class QuotationService {
 
   private final CommonService commonService;
   private final ChartResearchService chartResearchService;
-  private final StatisticsService statisticsService;
 
-  public Map<String, List<String>> getBidCoinList(Double krw, List<Accounts> coinAccountList) {
+  public Map<String, List<String>> getBidCoinList(Double krw, List<Accounts> coinAccountList,
+      int ownLimit) {
     List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
         .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
@@ -68,8 +68,8 @@ public class QuotationService {
 
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
     for (CurrentPrice currentPrice : currentPriceList) {
-      if (!marketMap.isEmpty()) {
-        return marketMap;
+      if (marketMap.size() >= ownLimit) {
+        break;
       }
 
       if (currentPrice.getTradePrice() > 1000000d) {
@@ -81,11 +81,21 @@ public class QuotationService {
         continue;
       }
 
-      List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "240",
+      List<Candle> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
+          currentPrice.getMarket(), "200",
           "1");
 
-      if (minuteCandleList == null || minuteCandleList.isEmpty()) {
+      List<Candle> dayCandleList = QuotationRequestManager.getDayCandleList(
+          currentPrice.getMarket(), "5",
+          "1");
+
+      if (minuteCandleList == null || minuteCandleList.isEmpty() || dayCandleList == null
+          || dayCandleList.isEmpty()) {
+        continue;
+      }
+
+      double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 20);
+      if (rsi > 50) {
         continue;
       }
 
@@ -94,13 +104,17 @@ public class QuotationService {
           2);
       boolean isBottomBollingerBandValue =
           minuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
-
-      double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 20);
-      if (rsi >= 30 && !isBottomBollingerBandValue) {
+      if (!isBottomBollingerBandValue) {
         continue;
       }
 
-      String chartType = chartResearchService.getPositiveChartType(currentPrice.getMarket());
+      boolean isPositiveMovingAverage = chartResearchService.isPositiveMovingAverage(dayCandleList,
+          5);
+      if (!isPositiveMovingAverage) {
+        continue;
+      }
+
+      String chartType = chartResearchService.getPositiveChartType(minuteCandleList);
 
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
           currentPrice.getMarket());

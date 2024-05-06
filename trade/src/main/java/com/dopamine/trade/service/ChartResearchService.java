@@ -1,7 +1,6 @@
 package com.dopamine.trade.service;
 
-import com.dopamine.api_call.QuotationRequestManager;
-import com.dopamine.api_call.model.response.quotation.candles.minute.Minute;
+import com.dopamine.api_call.model.response.quotation.candle.Candle;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -14,8 +13,7 @@ import org.springframework.util.CollectionUtils;
 @Service
 public class ChartResearchService {
 
-  public String getPositiveChartType(String market) {
-    List<Minute> minuteCandleList = QuotationRequestManager.getMinuteCandleList(market, "5", "1");
+  public String getPositiveChartType(List<Candle> minuteCandleList) {
     String chartType = "NONE";
 
     if (isHammerChart(minuteCandleList)) {
@@ -34,10 +32,10 @@ public class ChartResearchService {
   }
 
 
-  private boolean isHammerChart(List<Minute> minuteCandleList) {
+  private boolean isHammerChart(List<Candle> minuteCandleList) {
     boolean isChart = false;
 
-    Minute beforeOneMinuteCandle = minuteCandleList.get(1);
+    Candle beforeOneMinuteCandle = minuteCandleList.get(1);
     double openingPrice = beforeOneMinuteCandle.getOpeningPrice();
     double tradePrice = beforeOneMinuteCandle.getTradePrice();
     double highPrice = beforeOneMinuteCandle.getHighPrice();
@@ -62,10 +60,10 @@ public class ChartResearchService {
     return isChart;
   }
 
-  private boolean isInverseHammerChart(List<Minute> minuteCandleList) {
+  private boolean isInverseHammerChart(List<Candle> minuteCandleList) {
     boolean isChart = false;
 
-    Minute beforeTwoMinuteCandle = minuteCandleList.get(2);
+    Candle beforeTwoMinuteCandle = minuteCandleList.get(2);
 
     double twoMinuteOpeningPrice = beforeTwoMinuteCandle.getOpeningPrice();
     double twoMinuteTradePrice = beforeTwoMinuteCandle.getTradePrice();
@@ -88,7 +86,7 @@ public class ChartResearchService {
       isChart = false;
     }
 
-    Minute beforeOneMinuteCandle = minuteCandleList.get(1);
+    Candle beforeOneMinuteCandle = minuteCandleList.get(1);
 
     double oneMinuteOpeningPrice = beforeOneMinuteCandle.getOpeningPrice();
     double oneMinuteTradePrice = beforeOneMinuteCandle.getTradePrice();
@@ -116,17 +114,17 @@ public class ChartResearchService {
     return isChart;
   }
 
-  private boolean isBullishEngulfingChart(List<Minute> minuteCandleList) {
+  private boolean isBullishEngulfingChart(List<Candle> minuteCandleList) {
     boolean isChart = false;
 
-    Minute beforeTwoMinuteCandle = minuteCandleList.get(2);
+    Candle beforeTwoMinuteCandle = minuteCandleList.get(2);
 
     double twoMinuteOpeningPrice = beforeTwoMinuteCandle.getOpeningPrice();
     double twoMinuteTradePrice = beforeTwoMinuteCandle.getTradePrice();
 
     if (twoMinuteOpeningPrice > twoMinuteTradePrice) {
 
-      Minute beforeOneMinuteCandle = minuteCandleList.get(1);
+      Candle beforeOneMinuteCandle = minuteCandleList.get(1);
 
       double oneMinuteOpeningPrice = beforeOneMinuteCandle.getOpeningPrice();
       double oneMinuteTradePrice = beforeOneMinuteCandle.getTradePrice();
@@ -149,10 +147,10 @@ public class ChartResearchService {
     return isChart;
   }
 
-  private boolean isMorningStarChart(List<Minute> minuteCandleList) {
+  private boolean isMorningStarChart(List<Candle> minuteCandleList) {
     boolean isChart = false;
 
-    Minute beforeThreeMinuteCandle = minuteCandleList.get(3);
+    Candle beforeThreeMinuteCandle = minuteCandleList.get(3);
 
     double threeMinuteOpeningPrice = beforeThreeMinuteCandle.getOpeningPrice();
     double threeMinuteTradePrice = beforeThreeMinuteCandle.getTradePrice();
@@ -175,7 +173,7 @@ public class ChartResearchService {
       isChart = false;
     }
 
-    Minute beforeTwoMinuteCandle = minuteCandleList.get(2);
+    Candle beforeTwoMinuteCandle = minuteCandleList.get(2);
 
     double twoMinuteOpeningPrice = beforeTwoMinuteCandle.getOpeningPrice();
     double twoMinuteTradePrice = beforeTwoMinuteCandle.getTradePrice();
@@ -196,7 +194,7 @@ public class ChartResearchService {
       isChart = false;
     }
 
-    Minute beforeOneMinuteCandle = minuteCandleList.get(1);
+    Candle beforeOneMinuteCandle = minuteCandleList.get(1);
 
     double oneMinuteOpeningPrice = beforeOneMinuteCandle.getOpeningPrice();
     double oneMinuteTradePrice = beforeOneMinuteCandle.getTradePrice();
@@ -216,10 +214,10 @@ public class ChartResearchService {
     return isChart;
   }
 
-  private boolean isThreeWhiteSoldiersChart(List<Minute> minuteCandleList) {
+  private boolean isThreeWhiteSoldiersChart(List<Candle> minuteCandleList) {
     boolean isChart = false;
 
-    Minute beforeThreeMinuteCandle = minuteCandleList.get(3);
+    Candle beforeThreeMinuteCandle = minuteCandleList.get(3);
 
     double threeMinuteOpeningPrice = beforeThreeMinuteCandle.getOpeningPrice();
     double threeMinuteTradePrice = beforeThreeMinuteCandle.getTradePrice();
@@ -242,7 +240,7 @@ public class ChartResearchService {
       isChart = false;
     }
 
-    Minute beforeTwoMinuteCandle = minuteCandleList.get(2);
+    Candle beforeTwoMinuteCandle = minuteCandleList.get(2);
 
     double twoMinuteOpeningPrice = beforeTwoMinuteCandle.getOpeningPrice();
     double twoMinuteTradePrice = beforeTwoMinuteCandle.getTradePrice();
@@ -265,7 +263,7 @@ public class ChartResearchService {
       isChart = false;
     }
 
-    Minute beforeOneMinuteCandle = minuteCandleList.get(1);
+    Candle beforeOneMinuteCandle = minuteCandleList.get(1);
 
     double oneMinuteOpeningPrice = beforeOneMinuteCandle.getOpeningPrice();
     double oneMinuteTradePrice = beforeOneMinuteCandle.getTradePrice();
@@ -285,14 +283,14 @@ public class ChartResearchService {
     return isChart;
   }
 
-  public Double getRsiByMinutes(List<Minute> minuteCandleList, int period) {
+  public Double getRsiByMinutes(List<Candle> minuteCandleList, int period) {
     if (CollectionUtils.isEmpty(minuteCandleList)) {
       return null;
     }
 
     // 지수 이동 평균은 과거 데이터부터 구해주어야 합니다.
     minuteCandleList = minuteCandleList.stream()
-        .sorted(Comparator.comparing(Minute::getTimestamp))  // 오름차순 (과거 순)
+        .sorted(Comparator.comparing(Candle::getTimestamp))  // 오름차순 (과거 순)
         .collect(Collectors.toList());  // Sort
 
     double zero = 0;
@@ -349,11 +347,11 @@ public class ChartResearchService {
     return rsi;
   }
 
-  public List<Double> getBollingerBandByMinutes(List<Minute> minuteCandleList, int period,
+  public List<Double> getBollingerBandByMinutes(List<Candle> minuteCandleList, int period,
       int multiplier) {
 
     List<Double> tradePriceList = minuteCandleList.subList(0, period).stream()
-        .map(Minute::getTradePrice)
+        .map(Candle::getTradePrice)
         .collect(Collectors.toList());
 
     double movingAverageLine =
@@ -369,6 +367,18 @@ public class ChartResearchService {
     double downMovingAverageLine = movingAverageLine - gap;
 
     return List.of(upMovingAverageLine, movingAverageLine, downMovingAverageLine);
+  }
+
+  public boolean isPositiveMovingAverage(List<Candle> dayCandleList, int period) {
+
+    List<Double> tradePriceList = dayCandleList.stream()
+        .map(Candle::getTradePrice)
+        .collect(Collectors.toList());
+
+    double movingAverageLine =
+        tradePriceList.stream().mapToDouble(d -> d).sum() / tradePriceList.size();
+
+    return tradePriceList.get(0) > movingAverageLine;
   }
 
 }

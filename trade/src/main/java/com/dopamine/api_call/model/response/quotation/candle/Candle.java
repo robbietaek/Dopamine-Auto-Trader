@@ -1,4 +1,4 @@
-package com.dopamine.api_call.model.response.quotation.candles.minute;
+package com.dopamine.api_call.model.response.quotation.candle;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +12,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Minute implements Serializable {
+public class Candle implements Serializable {
 
   /*
     market	마켓명	String
