@@ -7,6 +7,7 @@ import com.dopamine.api_call.model.response.order.available.OrderAvailable;
 import com.dopamine.api_call.model.response.quotation.candle.Candle;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
+import com.dopamine.api_call.model.response.statistics.UpbitMarketIndex;
 import com.dopamine.common.service.CommonService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +51,11 @@ public class QuotationService {
       Map<String, Double> marketFearMap = statisticsService.getFearGreed()
           .getMarketFearScoreMap();
       if (marketFearMap.isEmpty()) {
+        return marketMap;
+      }
+
+      UpbitMarketIndex upbitAltMarketIndex = statisticsService.getUpbitAltMarketIndex();
+      if (upbitAltMarketIndex == null || upbitAltMarketIndex.getChange().equals("FALL")) {
         return marketMap;
       }
 

@@ -23,16 +23,38 @@ public class StatisticsService {
   private final RestTemplate restTemplate;
 
   public UpbitMarketIndex getUpbitMarketIndex() {
-    URI uri = UriComponentsBuilder
-        .fromUriString("https://ubci-api.ubcindex.com")
-        .path("/v1/crix/index/recents")
-        .queryParam("codes", "IDX.UPBIT.UBMI")
-        .encode()
-        .build()
-        .toUri();
-    ResponseEntity<UpbitMarketIndex[]> responseEntity = restTemplate.getForEntity(uri,
-        UpbitMarketIndex[].class);
-    UpbitMarketIndex[] upbitMarketIndexArray = responseEntity.getBody();
+    UpbitMarketIndex[] upbitMarketIndexArray = new UpbitMarketIndex[1];
+    try {
+      URI uri = UriComponentsBuilder
+          .fromUriString("https://ubci-api.ubcindex.com")
+          .path("/v1/crix/index/recents")
+          .queryParam("codes", "IDX.UPBIT.UBMI")
+          .encode()
+          .build()
+          .toUri();
+      ResponseEntity<UpbitMarketIndex[]> responseEntity = restTemplate.getForEntity(uri,
+          UpbitMarketIndex[].class);
+      upbitMarketIndexArray[0] = responseEntity.getBody()[0];
+    } catch (Exception e) {
+    }
+    return upbitMarketIndexArray[0];
+  }
+
+  public UpbitMarketIndex getUpbitAltMarketIndex() {
+    UpbitMarketIndex[] upbitMarketIndexArray = new UpbitMarketIndex[1];
+    try {
+      URI uri = UriComponentsBuilder
+          .fromUriString("https://ubci-api.ubcindex.com")
+          .path("/v1/crix/index/recents")
+          .queryParam("codes", "IDX.UPBIT.UBAI")
+          .encode()
+          .build()
+          .toUri();
+      ResponseEntity<UpbitMarketIndex[]> responseEntity = restTemplate.getForEntity(uri,
+          UpbitMarketIndex[].class);
+      upbitMarketIndexArray[0] = responseEntity.getBody()[0];
+    } catch (Exception e) {
+    }
     return upbitMarketIndexArray[0];
   }
 
