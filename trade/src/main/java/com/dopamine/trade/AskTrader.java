@@ -80,7 +80,7 @@ public class AskTrader {
           minuteCandleList,
           20, 2);
       boolean isTopBollingerBandValue =
-          bollingerBandValue.get(0) <= minuteCandleList.get(0).getTradePrice();
+          bollingerBandValue.get(0) <= minuteCandleList.get(0).getHighPrice();
 
       if (avgBuyPrice * askProfitRateValue < currentBidPrice) {
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());

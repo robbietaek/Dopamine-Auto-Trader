@@ -115,7 +115,7 @@ public class QuotationService {
           minuteCandleList, 20,
           2);
       boolean isBottomBollingerBandValue =
-          minuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
+          minuteCandleList.get(0).getLowPrice() <= bollingerBandValue.get(2);
       if (!isBottomBollingerBandValue) {
         continue;
       }
