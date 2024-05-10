@@ -56,6 +56,10 @@ public class QuotationService {
       List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
           .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
+      if (marketCodeList == null || marketCodeList.isEmpty()) {
+        return marketMap;
+      }
+
       currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
               marketCodeList.stream().map(MarketCode::getMarket).collect(Collectors.toList())).stream()
           .filter(market -> market.getAccTradePrice24h() >= 4.000000000000000E10d)
