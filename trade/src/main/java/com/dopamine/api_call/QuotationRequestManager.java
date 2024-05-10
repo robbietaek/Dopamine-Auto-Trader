@@ -118,12 +118,11 @@ public final class QuotationRequestManager {
     ArrayList<String> queryElements = new ArrayList<>();
     queryElements.add("market=" + market);
     queryElements.add("count=" + count);
-    queryElements.add("unit=" + unit);
 
     String queryString = String.join("&", queryElements.toArray(new String[0]));
 
     Request request = new Request.Builder()
-        .url(serverUrl + "/v1/candles/minutes/1?" + queryString)
+        .url(serverUrl + "/v1/candles/minutes/+" + unit + "?" + queryString)
         .get()
         .addHeader("accept", "application/json")
         .build();
@@ -139,13 +138,12 @@ public final class QuotationRequestManager {
     return minuteCancleList;
   }
 
-  public static List<Candle> getDayCandleList(String market, String count, String unit) {
+  public static List<Candle> getDayCandleList(String market, String count) {
     OkHttpClient client = new OkHttpClient();
 
     ArrayList<String> queryElements = new ArrayList<>();
     queryElements.add("market=" + market);
     queryElements.add("count=" + count);
-    queryElements.add("unit=" + unit);
 
     String queryString = String.join("&", queryElements.toArray(new String[0]));
 

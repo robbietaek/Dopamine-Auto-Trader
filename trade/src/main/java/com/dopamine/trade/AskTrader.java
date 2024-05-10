@@ -68,9 +68,10 @@ public class AskTrader {
       LocalDateTime limitAskOrderTime = bidOrderHistory.getOrderTime();
       Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
 
+      String candleUnit = commonService.getConfig("BID", "candle_unit").trim();
       List<Candle> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
           currentPrice.getMarket(), "200",
-          "1");
+          candleUnit);
       if (minuteCandleList == null || minuteCandleList.isEmpty()) {
         continue;
       }

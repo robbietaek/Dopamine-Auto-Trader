@@ -1,7 +1,5 @@
 package com.dopamine.trade.service;
 
-import static com.dopamine.tool.ShuffleStream.toShuffledList;
-
 import com.dopamine.api_call.OrderRequestManager;
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
@@ -53,7 +51,7 @@ public class QuotationService {
       currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
               marketCodeList.stream().map(MarketCode::getMarket).collect(Collectors.toList())).stream()
           .sorted(
-              Comparator.comparing(CurrentPrice::getSignedChangeRate).reversed())
+              Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed())
           .collect(Collectors.toList());
 
       int totalCount = currentPriceList.size();
@@ -68,16 +66,15 @@ public class QuotationService {
       String valueLevel = commonService.getConfig("BID", "value_level").trim();
       if (valueLevel.equals("상위")) {
         currentPriceList = new ArrayList<>(
-            currentPriceList.subList(0, (int) ((double) totalCount * (1d / 3d)))).stream()
-            .collect(toShuffledList());
+            currentPriceList.subList(0, (int) ((double) totalCount * (1d / 3d))));
       } else if (valueLevel.equals("중위")) {
         currentPriceList = new ArrayList<>(
             currentPriceList.subList((int) ((double) totalCount * (1d / 3d)),
-                (int) ((double) totalCount * (2d / 3d)))).stream().collect(toShuffledList());
+                (int) ((double) totalCount * (2d / 3d))));
       } else if (valueLevel.equals("하위")) {
         currentPriceList = new ArrayList<>(
             currentPriceList.subList((int) ((double) totalCount * (2d / 3d)),
-                (int) ((double) totalCount * (3d / 3d)))).stream().collect(toShuffledList());
+                (int) ((double) totalCount * (3d / 3d))));
       } else {
         // valueLevel = 전체
       }
@@ -98,14 +95,12 @@ public class QuotationService {
         continue;
       }
 
+      String candleUnit = commonService.getConfig("BID", "candle_unit").trim();
       List<Candle> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
           currentPrice.getMarket(), "200",
-          "1");
-
+          candleUnit);
       List<Candle> dayCandleList = QuotationRequestManager.getDayCandleList(
-          currentPrice.getMarket(), "5",
-          "1");
-
+          currentPrice.getMarket(), "5");
       if (minuteCandleList == null || minuteCandleList.isEmpty() || dayCandleList == null
           || dayCandleList.isEmpty()) {
         continue;

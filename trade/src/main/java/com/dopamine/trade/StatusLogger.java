@@ -41,7 +41,7 @@ public class StatusLogger {
     String valueLevel = commonService.getConfig("BID", "value_level");
 
     log.info(
-        "[일반정보] 상승 : {}개, 보합 : {}개, 하락 : {}개, 상승퍼센트 설정값 : {}, 전일대비 레벨 : {}, 평가자산 : {}원, 보유코인 : {}",
+        "[일반정보] 상승 : {}개, 보합 : {}개, 하락 : {}개, 상승퍼센트 설정값 : {}, 거래대금 레벨 : {}, 평가자산 : {}원, 보유코인 : {}",
         currentRiseCoinCount,
         currentEvenCoinCount,
         currentFallCoinCount,
