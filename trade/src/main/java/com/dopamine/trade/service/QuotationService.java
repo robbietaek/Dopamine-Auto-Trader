@@ -7,7 +7,6 @@ import com.dopamine.api_call.model.response.order.available.OrderAvailable;
 import com.dopamine.api_call.model.response.quotation.candle.Candle;
 import com.dopamine.api_call.model.response.quotation.current_price.CurrentPrice;
 import com.dopamine.api_call.model.response.quotation.market_code.MarketCode;
-import com.dopamine.api_call.model.response.statistics.UpbitMarketIndex;
 import com.dopamine.common.service.CommonService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,11 +53,6 @@ public class QuotationService {
         return marketMap;
       }
 
-      UpbitMarketIndex upbitAltMarketIndex = statisticsService.getUpbitAltMarketIndex();
-      if (upbitAltMarketIndex == null || upbitAltMarketIndex.getChange().equals("FALL")) {
-        return marketMap;
-      }
-
       List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
           .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
@@ -68,7 +62,7 @@ public class QuotationService {
 
       currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
               marketCodeList.stream().map(MarketCode::getMarket).collect(Collectors.toList())).stream()
-          .filter(market -> market.getAccTradePrice24h() >= 4.000000000000000E10d)
+          .filter(market -> market.getAccTradePrice24h() >= 2.000000000000000E10d)
           .filter(market -> Objects.nonNull(marketFearMap.get(market.getMarket()))
               && marketFearMap.get(market.getMarket()) >= 40d
               && marketFearMap.get(market.getMarket()) < 60d)
@@ -90,34 +84,44 @@ public class QuotationService {
         continue;
       }
 
-      String candleUnit = commonService.getConfig("BID", "candle_unit").trim();
-      List<Candle> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
+      List<Candle> oneMinuteCandleList = QuotationRequestManager.getMinuteCandleList(
           currentPrice.getMarket(), "200",
-          candleUnit);
-      List<Candle> dayCandleList = QuotationRequestManager.getDayCandleList(
-          currentPrice.getMarket(), "5");
-      if (minuteCandleList == null || minuteCandleList.isEmpty() || dayCandleList == null
-          || dayCandleList.isEmpty()) {
+          "1");
+      if (oneMinuteCandleList == null || oneMinuteCandleList.isEmpty()) {
         continue;
       }
 
-      double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 20);
+      boolean isPositiveMovingAverage120Minute = chartResearchService.isPositiveMovingAverage(
+          oneMinuteCandleList,
+          120);
+      boolean isPositiveMovingAverage60Minute = chartResearchService.isPositiveMovingAverage(
+          oneMinuteCandleList,
+          60);
+
+      if (!isPositiveMovingAverage120Minute || !isPositiveMovingAverage60Minute) {
+        continue;
+      }
+
+      String candleUnit = commonService.getConfig("BID", "candle_unit").trim();
+      List<Candle> configMinuteCandleList = QuotationRequestManager.getMinuteCandleList(
+          currentPrice.getMarket(), "200",
+          candleUnit);
+
+      if (configMinuteCandleList == null || configMinuteCandleList.isEmpty()) {
+        continue;
+      }
+
+      double rsi = chartResearchService.getRsiByMinutes(configMinuteCandleList, 20);
       if (rsi > 50) {
         continue;
       }
 
       List<Double> bollingerBandValue = chartResearchService.getBollingerBandByMinutes(
-          minuteCandleList, 20,
+          configMinuteCandleList, 20,
           2);
       boolean isBottomBollingerBandValue =
-          minuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
+          configMinuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
       if (!isBottomBollingerBandValue) {
-        continue;
-      }
-
-      boolean isPositiveMovingAverage = chartResearchService.isPositiveMovingAverage(dayCandleList,
-          5);
-      if (!isPositiveMovingAverage) {
         continue;
       }
 

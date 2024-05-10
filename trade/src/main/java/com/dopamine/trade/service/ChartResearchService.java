@@ -369,15 +369,21 @@ public class ChartResearchService {
     return List.of(upMovingAverageLine, movingAverageLine, downMovingAverageLine);
   }
 
-  public boolean isPositiveMovingAverage(List<Candle> dayCandleList, int period) {
+  public boolean isPositiveMovingAverage(List<Candle> candleList, int period) {
 
-    List<Double> tradePriceList = dayCandleList.stream()
+    if (period > candleList.size()) {
+      return false;
+    }
+
+    List<Double> tradePriceList = candleList.stream()
+        .sorted(Comparator.comparing(Candle::getTimestamp).reversed())
+        .limit(period)
         .map(Candle::getTradePrice)
         .collect(Collectors.toList());
 
     double movingAverageLine =
         tradePriceList.stream().mapToDouble(d -> d).sum() / tradePriceList.size();
-
+    
     return tradePriceList.get(0) > movingAverageLine;
   }
 
