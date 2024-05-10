@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class QuotationService {
 
   private final CommonService commonService;
   private final ChartResearchService chartResearchService;
+  private final StatisticsService statisticsService;
 
   public Map<String, List<String>> getBidCoinList(Double krw, List<Accounts> coinAccountList,
       int ownLimit) {
@@ -45,42 +47,25 @@ public class QuotationService {
           .collect(Collectors.toList());
 
     } else {
+      Map<String, Double> marketFearMap = statisticsService.getFearGreed()
+          .getMarketFearScoreMap();
+      if (marketFearMap.isEmpty()) {
+        return marketMap;
+      }
+
       List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
           .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
       currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
               marketCodeList.stream().map(MarketCode::getMarket).collect(Collectors.toList())).stream()
-          .sorted(
-              Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed())
+          .filter(market -> market.getAccTradePrice24h() >= 4.000000000000000E10d)
+          .filter(market -> Objects.nonNull(marketFearMap.get(market.getMarket()))
+              && marketFearMap.get(market.getMarket()) >= 40d
+              && marketFearMap.get(market.getMarket()) <= 55d)
+          .sorted(Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed())
           .collect(Collectors.toList());
-
-      int totalCount = currentPriceList.size();
-      long currentRiseCoinCount = currentPriceList.stream()
-          .filter(price -> price.getChange().equals("RISE")).count();
-      double riseCoinPercent = Double.parseDouble(
-          commonService.getConfig("BID", "rise_coin_percent"));
-      if (currentRiseCoinCount < totalCount * riseCoinPercent) {
-        return marketMap;
-      }
-
-      String valueLevel = commonService.getConfig("BID", "value_level").trim();
-      if (valueLevel.equals("상위")) {
-        currentPriceList = new ArrayList<>(
-            currentPriceList.subList(0, (int) ((double) totalCount * (1d / 3d))));
-      } else if (valueLevel.equals("중위")) {
-        currentPriceList = new ArrayList<>(
-            currentPriceList.subList((int) ((double) totalCount * (1d / 3d)),
-                (int) ((double) totalCount * (2d / 3d))));
-      } else if (valueLevel.equals("하위")) {
-        currentPriceList = new ArrayList<>(
-            currentPriceList.subList((int) ((double) totalCount * (2d / 3d)),
-                (int) ((double) totalCount * (3d / 3d))));
-      } else {
-        // valueLevel = 전체
-      }
     }
 
-    int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
     for (CurrentPrice currentPrice : currentPriceList) {
       if (marketMap.size() >= ownLimit) {
         break;
@@ -115,7 +100,7 @@ public class QuotationService {
           minuteCandleList, 20,
           2);
       boolean isBottomBollingerBandValue =
-          minuteCandleList.get(0).getLowPrice() <= bollingerBandValue.get(2);
+          minuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
       if (!isBottomBollingerBandValue) {
         continue;
       }
@@ -125,8 +110,6 @@ public class QuotationService {
       if (!isPositiveMovingAverage) {
         continue;
       }
-
-      String chartType = chartResearchService.getPositiveChartType(minuteCandleList);
 
       OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
           currentPrice.getMarket());
@@ -152,8 +135,7 @@ public class QuotationService {
       }
 
       marketMap.put(currentPrice.getMarket(),
-          List.of(String.valueOf(rsi), String.valueOf(bollingerBandValue.get(2)),
-              chartType));
+          List.of(String.valueOf(rsi), String.valueOf(bollingerBandValue.get(2))));
     }
     return marketMap;
   }

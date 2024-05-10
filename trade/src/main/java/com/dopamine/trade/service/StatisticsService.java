@@ -3,6 +3,7 @@ package com.dopamine.trade.service;
 import com.dopamine.api_call.model.response.statistics.TopSortedMarket;
 import com.dopamine.api_call.model.response.statistics.UpbitMarketIndex;
 import com.dopamine.api_call.model.response.statistics.UpbitMarketIndexCandle;
+import com.dopamine.api_call.model.response.statistics.fear_greed.FearGreed;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +34,23 @@ public class StatisticsService {
         UpbitMarketIndex[].class);
     UpbitMarketIndex[] upbitMarketIndexArray = responseEntity.getBody();
     return upbitMarketIndexArray[0];
+  }
+
+  public FearGreed getFearGreed() {
+    FearGreed fearGreed = new FearGreed();
+    try {
+      URI uri = UriComponentsBuilder
+          .fromUriString("https://ubci-api.ubcindex.com")
+          .path("/v1/crix/feargreed")
+          .encode()
+          .build()
+          .toUri();
+      ResponseEntity<FearGreed> responseEntity = restTemplate.getForEntity(uri,
+          FearGreed.class);
+      fearGreed = responseEntity.getBody();
+    } catch (Exception e) {
+    }
+    return fearGreed;
   }
 
   public List<UpbitMarketIndexCandle> getOneDayUpbitMarektIndexCandleList() {

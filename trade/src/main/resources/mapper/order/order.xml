@@ -3,7 +3,7 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dopamine.trade.dao.OrderDao">
 
-  <insert id="insertOrderInformation">
+  <insert id="insertAskOrderInformation">
     INSERT INTO
       tb_coin_order_history
     (
@@ -35,7 +35,7 @@
     )
   </insert>
 
-  <insert id="insertOrderInformationWithChartType">
+  <insert id="insertBidOrderInformation">
     INSERT INTO
       tb_coin_order_history
     (
@@ -46,10 +46,6 @@
       , price
       , volume
       , order_time
-      , chart_type
-      , profit_rate
-      , loss_rate
-      , time_limit
       , is_expired
     )
     VALUES
@@ -61,10 +57,6 @@
       , #{order.price}
       , #{order.volume}
       , NOW()
-      , #{chartType}
-      , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'profit_rate')
-      , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'loss_rate')
-      , (SELECT value FROM tb_config WHERE "group" = 'ASK' AND key = 'time_limit')
       , false
     )
   </insert>
@@ -130,7 +122,6 @@
       , price
       , volume
       , order_time
-      , chart_type
       , profit_rate
       , loss_rate
       , time_limit
@@ -164,7 +155,6 @@
       , price
       , volume
       , order_time
-      , chart_type
       , profit_rate
       , loss_rate
       , time_limit

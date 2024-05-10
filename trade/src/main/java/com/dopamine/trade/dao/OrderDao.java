@@ -10,10 +10,9 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface OrderDao {
 
-  void insertOrderInformation(@Param("order") Order order);
+  void insertAskOrderInformation(@Param("order") Order order);
 
-  void insertOrderInformationWithChartType(@Param("order") Order order,
-      @Param("chartType") String chartType);
+  void insertBidOrderInformation(@Param("order") Order order);
 
   void updateBidPriceCoinOrderHistoryExpired(@Param("market") String market);
 

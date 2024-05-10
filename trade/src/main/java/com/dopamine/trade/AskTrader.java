@@ -1,7 +1,5 @@
 package com.dopamine.trade;
 
-import static com.dopamine.trade.BidTrader.ownCoin;
-
 import com.dopamine.api_call.QuotationRequestManager;
 import com.dopamine.api_call.model.response.accounts.Accounts;
 import com.dopamine.api_call.model.response.order.order.Order;
@@ -102,7 +100,6 @@ public class AskTrader {
               askProfitRateValue
           );
 
-          ownCoin.remove(account.getCurrency());
         }
       } else if (rsi >= 70 || (avgBuyPrice * 1.002 < currentBidPrice && isTopBollingerBandValue)) {
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
@@ -125,7 +122,6 @@ public class AskTrader {
               bollingerBandValue.get(0)
           );
 
-          ownCoin.remove(account.getCurrency());
         }
       } else if (avgBuyPrice * askLossRateValue > currentBidPrice) {
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
@@ -148,7 +144,6 @@ public class AskTrader {
                           : Double.parseDouble(account.getLocked())) / 0.9995d))),
               askLossRateValue
           );
-          ownCoin.remove(account.getCurrency());
         }
 
       } else if (limitAskOrderTime.isBefore(
@@ -173,7 +168,6 @@ public class AskTrader {
               askTimeoutLimitValue
           );
 
-          ownCoin.remove(account.getCurrency());
         }
       }
     }

@@ -7,10 +7,8 @@ import com.dopamine.trade.dao.OrderDao;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,18 +25,12 @@ public class BidTrader {
   private final CommonService commonService;
   private final OrderDao orderDao;
 
-  public static Set<String> ownCoin = new HashSet<>();
-
-  @Scheduled(fixedDelay = 4383)
+  @Scheduled(fixedDelay = 3383)
   public void bidTrader() {
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
     List<String> coinOwnList = coinAccountList.stream().map(Accounts::getCurrency).toList();
 
-    if (ownCoin.isEmpty() && coinOwnList.size() > 0) {
-      ownCoin.addAll(coinOwnList);
-    } else if (ownCoin.size() > 0 && coinOwnList.size() == 0) {
-      ownCoin.clear();
-    } else if (ownCoin.isEmpty() && coinOwnList.isEmpty()) {
+    if (coinOwnList.isEmpty() || coinOwnList.size() == 0) {
       orderDao.updateOrderIsExpired();
     }
 
@@ -62,14 +54,13 @@ public class BidTrader {
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         double afterKrw = accountService.getKRWStatus();
         if (order.isSuccess() && krw != afterKrw) {
-          orderDao.insertOrderInformationWithChartType(order, askCoinMap.get(market).get(2));
+          orderDao.insertBidOrderInformation(order);
           coinOwnCount++;
           krw = accountService.getKRWStatus();
           log.info("[매수완료] 코인명 : {}, RSI : {}, 하단 볼린저밴드 값 : {}",
               market.replace("KRW-", ""),
               askCoinMap.get(market).get(0),
               askCoinMap.get(market).get(1));
-          ownCoin.add(market);
         }
 
         if (coinOwnCount == coinOwnLimit) {
