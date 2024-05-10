@@ -65,7 +65,7 @@ public class QuotationService {
           .filter(market -> market.getAccTradePrice24h() >= 4.000000000000000E10d)
           .filter(market -> Objects.nonNull(marketFearMap.get(market.getMarket()))
               && marketFearMap.get(market.getMarket()) >= 40d
-              && marketFearMap.get(market.getMarket()) <= 55d)
+              && marketFearMap.get(market.getMarket()) < 60d)
           .sorted(Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed())
           .collect(Collectors.toList());
     }
