@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,6 @@ public class QuotationService {
 
   private final CommonService commonService;
   private final ChartResearchService chartResearchService;
-  private final StatisticsService statisticsService;
 
   public Map<String, List<String>> getBidCoinList(Double krw, List<Accounts> coinAccountList,
       int ownLimit) {
@@ -38,6 +36,7 @@ public class QuotationService {
     String pickMarket = commonService.getConfig("BID", "pick_market").trim();
 
     if (StringUtils.isNoneEmpty(pickMarket)) {
+      // 코인을 지정한 경우
       List<String> pickMarketList = Arrays.asList(pickMarket.trim().split(","));
       currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
               pickMarketList.stream().filter(market -> StringUtils.isNoneEmpty(market))
@@ -47,12 +46,7 @@ public class QuotationService {
           .collect(Collectors.toList());
 
     } else {
-      Map<String, Double> marketFearMap = statisticsService.getFearGreed()
-          .getMarketFearScoreMap();
-      if (marketFearMap.isEmpty()) {
-        return marketMap;
-      }
-
+      // 코인을 지정하지 않은 경우
       List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
           .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
@@ -63,9 +57,6 @@ public class QuotationService {
       currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
               marketCodeList.stream().map(MarketCode::getMarket).collect(Collectors.toList())).stream()
           .filter(market -> market.getAccTradePrice24h() >= 2.000000000000000E10d)
-          .filter(market -> Objects.nonNull(marketFearMap.get(market.getMarket()))
-              && marketFearMap.get(market.getMarket()) >= 40d
-              && marketFearMap.get(market.getMarket()) < 60d)
           .sorted(Comparator.comparing(CurrentPrice::getAccTradePrice24h).reversed())
           .collect(Collectors.toList());
     }
@@ -84,44 +75,36 @@ public class QuotationService {
         continue;
       }
 
-      List<Candle> oneMinuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "200",
-          "1");
-      if (oneMinuteCandleList == null || oneMinuteCandleList.isEmpty()) {
-        continue;
-      }
-
-      boolean isPositiveMovingAverage120Minute = chartResearchService.isPositiveMovingAverage(
-          oneMinuteCandleList,
-          120);
-      boolean isPositiveMovingAverage60Minute = chartResearchService.isPositiveMovingAverage(
-          oneMinuteCandleList,
-          60);
-
-      if (!isPositiveMovingAverage120Minute || !isPositiveMovingAverage60Minute) {
-        continue;
-      }
-
       String candleUnit = commonService.getConfig("BID", "candle_unit").trim();
-      List<Candle> configMinuteCandleList = QuotationRequestManager.getMinuteCandleList(
+      List<Candle> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
           currentPrice.getMarket(), "200",
           candleUnit);
-
-      if (configMinuteCandleList == null || configMinuteCandleList.isEmpty()) {
+      List<Candle> dayCandleList = QuotationRequestManager.getDayCandleList(
+          currentPrice.getMarket(), "5");
+      if (minuteCandleList == null || minuteCandleList.isEmpty() || dayCandleList == null
+          || dayCandleList.isEmpty()) {
         continue;
       }
 
-      double rsi = chartResearchService.getRsiByMinutes(configMinuteCandleList, 20);
+      double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 20);
       if (rsi > 50) {
         continue;
       }
 
+      Integer bollingerBandPeriod = Integer.parseInt(
+          commonService.getConfig("BID", "bollinger_band_period").trim());
       List<Double> bollingerBandValue = chartResearchService.getBollingerBandByMinutes(
-          configMinuteCandleList, 20,
+          minuteCandleList, bollingerBandPeriod,
           2);
       boolean isBottomBollingerBandValue =
-          configMinuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
+          minuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
       if (!isBottomBollingerBandValue) {
+        continue;
+      }
+
+      boolean isPositiveMovingAverage = chartResearchService.isPositiveMovingAverage(dayCandleList,
+          5);
+      if (!isPositiveMovingAverage) {
         continue;
       }
 

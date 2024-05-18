@@ -8,7 +8,6 @@ import com.dopamine.api_call.model.response.quotation.order_book.OrderBook;
 import com.dopamine.api_call.type.OrderSide;
 import com.dopamine.api_call.type.OrderType;
 import com.dopamine.common.service.CommonService;
-import com.dopamine.trade.dao.OrderDao;
 import com.dopamine.trade.model.OrderHistory;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.ChartResearchService;
@@ -30,7 +29,6 @@ public class AskTrader {
   private final OrderService orderService;
   private final CommonService commonService;
   private final ChartResearchService chartResearchService;
-  private final OrderDao orderDao;
 
   @Scheduled(fixedDelay = 1771)
   public void askTrader() {
@@ -74,9 +72,11 @@ public class AskTrader {
         continue;
       }
       double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 14);
+      Integer bollingerBandPeriod = Integer.parseInt(
+          commonService.getConfig("BID", "bollinger_band_period").trim());
       List<Double> bollingerBandValue = chartResearchService.getBollingerBandByMinutes(
           minuteCandleList,
-          20, 2);
+          bollingerBandPeriod, 2);
       boolean isTopBollingerBandValue =
           bollingerBandValue.get(0) <= minuteCandleList.get(0).getHighPrice();
 
