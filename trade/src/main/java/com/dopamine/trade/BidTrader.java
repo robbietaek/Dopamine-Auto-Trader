@@ -8,7 +8,6 @@ import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -43,13 +42,13 @@ public class BidTrader {
         return;
       }
 
-      Map<String, List<String>> askCoinMap = quotationService.getBidCoinList(krw, coinAccountList,
+      List<String> askCoinList = quotationService.getBidCoinList(krw, coinAccountList,
           coinOwnLimit - coinOwnCount);
-      if (askCoinMap.isEmpty()) {
+      if (askCoinList.isEmpty()) {
         return;
       }
 
-      for (String market : askCoinMap.keySet()) {
+      for (String market : askCoinList) {
         Order order = orderService.bidFokCoin(market,
             krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
         double afterKrw = accountService.getKRWStatus();
@@ -57,10 +56,8 @@ public class BidTrader {
           orderDao.insertBidOrderInformation(order);
           coinOwnCount++;
           krw = accountService.getKRWStatus();
-          log.info("[매수완료] 코인명 : {}, RSI : {}, 하단 볼린저밴드 값 : {}",
-              market.replace("KRW-", ""),
-              askCoinMap.get(market).get(0),
-              askCoinMap.get(market).get(1));
+          log.info("[매수주문] 코인명 : {}",
+              market.replace("KRW-", ""));
         }
 
         if (coinOwnCount == coinOwnLimit) {

@@ -73,7 +73,7 @@ public class AskTrader {
       }
       double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 14);
       Integer bollingerBandPeriod = Integer.parseInt(
-          commonService.getConfig("BID", "bollinger_band_period").trim());
+          commonService.getConfig("BOLLINGER", "period").trim());
       List<Double> bollingerBandValue = chartResearchService.getBollingerBandByMinutes(
           minuteCandleList,
           bollingerBandPeriod, 2);

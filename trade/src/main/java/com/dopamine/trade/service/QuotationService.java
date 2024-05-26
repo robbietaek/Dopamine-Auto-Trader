@@ -11,9 +11,7 @@ import com.dopamine.common.service.CommonService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +26,10 @@ public class QuotationService {
   private final CommonService commonService;
   private final ChartResearchService chartResearchService;
 
-  public Map<String, List<String>> getBidCoinList(Double krw, List<Accounts> coinAccountList,
+  public List<String> getBidCoinList(Double krw, List<Accounts> coinAccountList,
       int ownLimit) {
 
-    Map<String, List<String>> marketMap = new LinkedHashMap<>();
+    List<String> marketList = new ArrayList<>();
     List<CurrentPrice> currentPriceList = new ArrayList<>();
     String pickMarket = commonService.getConfig("BID", "pick_market").trim();
 
@@ -51,7 +49,7 @@ public class QuotationService {
           .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
       if (marketCodeList == null || marketCodeList.isEmpty()) {
-        return marketMap;
+        return marketList;
       }
 
       currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
@@ -62,7 +60,7 @@ public class QuotationService {
     }
 
     for (CurrentPrice currentPrice : currentPriceList) {
-      if (marketMap.size() >= ownLimit) {
+      if (marketList.size() >= ownLimit) {
         break;
       }
 
@@ -79,10 +77,7 @@ public class QuotationService {
       List<Candle> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
           currentPrice.getMarket(), "200",
           candleUnit);
-      List<Candle> dayCandleList = QuotationRequestManager.getDayCandleList(
-          currentPrice.getMarket(), "5");
-      if (minuteCandleList == null || minuteCandleList.isEmpty() || dayCandleList == null
-          || dayCandleList.isEmpty()) {
+      if (minuteCandleList == null || minuteCandleList.isEmpty()) {
         continue;
       }
 
@@ -92,19 +87,13 @@ public class QuotationService {
       }
 
       Integer bollingerBandPeriod = Integer.parseInt(
-          commonService.getConfig("BID", "bollinger_band_period").trim());
+          commonService.getConfig("BOLLINGER", "period").trim());
       List<Double> bollingerBandValue = chartResearchService.getBollingerBandByMinutes(
           minuteCandleList, bollingerBandPeriod,
           2);
       boolean isBottomBollingerBandValue =
           minuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
       if (!isBottomBollingerBandValue) {
-        continue;
-      }
-
-      boolean isPositiveMovingAverage = chartResearchService.isPositiveMovingAverage(dayCandleList,
-          5);
-      if (!isPositiveMovingAverage) {
         continue;
       }
 
@@ -131,10 +120,9 @@ public class QuotationService {
         continue;
       }
 
-      marketMap.put(currentPrice.getMarket(),
-          List.of(String.valueOf(rsi), String.valueOf(bollingerBandValue.get(2))));
+      marketList.add(currentPrice.getMarket());
     }
-    return marketMap;
+    return marketList;
   }
 
 }

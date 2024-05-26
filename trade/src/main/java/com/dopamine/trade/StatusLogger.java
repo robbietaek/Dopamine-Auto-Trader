@@ -21,7 +21,7 @@ public class StatusLogger {
   private final CommonService commonService;
   private final AccountService accountService;
 
-  @Scheduled(fixedRate = 10000)
+  @Scheduled(fixedRate = 30000)
   public void loggingMarketStatus() {
     List<MarketCode> marketCodeList = QuotationRequestManager.getMarketCodeList().stream()
         .filter(market -> market.getMarket().startsWith("KRW")).toList();
