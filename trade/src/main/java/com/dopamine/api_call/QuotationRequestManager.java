@@ -122,7 +122,7 @@ public final class QuotationRequestManager {
     String queryString = String.join("&", queryElements.toArray(new String[0]));
 
     Request request = new Request.Builder()
-        .url(serverUrl + "/v1/candles/minutes/+" + unit + "?" + queryString)
+        .url(serverUrl + "/v1/candles/minutes/" + unit + "?" + queryString)
         .get()
         .addHeader("accept", "application/json")
         .build();

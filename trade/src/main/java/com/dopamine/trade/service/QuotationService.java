@@ -11,7 +11,9 @@ import com.dopamine.common.service.CommonService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +28,7 @@ public class QuotationService {
   private final CommonService commonService;
   private final ChartResearchService chartResearchService;
 
-  public List<String> getBidCoinList(Double krw, List<Accounts> coinAccountList,
-      int ownLimit) {
-
-    List<String> marketList = new ArrayList<>();
+  public List<String> getBidCoinList(Double krw, List<Accounts> coinAccountList) {
     List<CurrentPrice> currentPriceList = new ArrayList<>();
     String pickMarket = commonService.getConfig("BID", "pick_market").trim();
 
@@ -49,7 +48,7 @@ public class QuotationService {
           .filter(market -> market.getMarket().startsWith("KRW")).toList();
 
       if (marketCodeList == null || marketCodeList.isEmpty()) {
-        return marketList;
+        return new ArrayList<>();
       }
 
       currentPriceList = QuotationRequestManager.getTickerCurrentPrice(
@@ -59,9 +58,17 @@ public class QuotationService {
           .collect(Collectors.toList());
     }
 
+    Map<String, Double> coinRaiseMap = new HashMap<>();
+
     for (CurrentPrice currentPrice : currentPriceList) {
-      if (marketList.size() >= ownLimit) {
-        break;
+      OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
+          currentPrice.getMarket());
+      if (orderAvailable == null) {
+        continue;
+      }
+
+      if (Double.parseDouble(orderAvailable.getMarket().getAsk().getMinTotal()) > krw) {
+        continue;
       }
 
       if (currentPrice.getTradePrice() > 1000000d) {
@@ -73,55 +80,38 @@ public class QuotationService {
         continue;
       }
 
-      String candleUnit = commonService.getConfig("BID", "candle_unit").trim();
-      List<Candle> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "200",
-          candleUnit);
-      if (minuteCandleList == null || minuteCandleList.isEmpty()) {
+      List<Candle> bitCoinCandleList = QuotationRequestManager.getDayCandleList(
+          currentPrice.getMarket(), "120");
+      if (bitCoinCandleList == null || bitCoinCandleList.isEmpty()) {
         continue;
       }
 
-      double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 20);
-      if (rsi > 50) {
+      boolean isPositiveMoving = chartResearchService.isPositiveMovingAverage(bitCoinCandleList,
+          bitCoinCandleList.size());
+      if (!isPositiveMoving) {
         continue;
       }
 
-      Integer bollingerBandPeriod = Integer.parseInt(
-          commonService.getConfig("BOLLINGER", "period").trim());
-      List<Double> bollingerBandValue = chartResearchService.getBollingerBandByMinutes(
-          minuteCandleList, bollingerBandPeriod,
-          2);
-      boolean isBottomBollingerBandValue =
-          minuteCandleList.get(0).getTradePrice() <= bollingerBandValue.get(2);
-      if (!isBottomBollingerBandValue) {
+      List<Candle> dayCandleList = QuotationRequestManager.getDayCandleList(
+          currentPrice.getMarket(), "7");
+      if (dayCandleList == null || dayCandleList.isEmpty()) {
         continue;
       }
 
-      OrderAvailable orderAvailable = OrderRequestManager.getOrderAvailable(
-          currentPrice.getMarket());
-      if (orderAvailable == null) {
-        continue;
-      }
-      if (Double.parseDouble(orderAvailable.getBidFee()) > 0.0005d
-          || Double.parseDouble(orderAvailable.getAskFee()) > 0.0005d) {
-        continue;
-      }
-
-      if (!orderAvailable.getMarket().getAskTypes().contains("limit")
-          || !orderAvailable.getMarket().getAskTypes().contains("market")
-          || !orderAvailable.getMarket().getBidTypes().contains("limit")
-          || !orderAvailable.getMarket().getBidTypes().contains("price")
-          || !orderAvailable.getMarket().getOrderSides().contains("ask")
-          || !orderAvailable.getMarket().getOrderSides().contains("bid")) {
+      double currentTradePrice = dayCandleList.get(0).getTradePrice();
+      double servenDayBeforeTradePrice = dayCandleList.get(dayCandleList.size() - 1)
+          .getTradePrice();
+      double divPercent = (currentTradePrice / servenDayBeforeTradePrice) * 100;
+      if (divPercent < 100d) {
         continue;
       }
 
-      if (Double.parseDouble(orderAvailable.getMarket().getAsk().getMinTotal()) > krw) {
-        continue;
-      }
-
-      marketList.add(currentPrice.getMarket());
+      coinRaiseMap.put(currentPrice.getMarket(), divPercent);
     }
+
+    List<String> marketList = new ArrayList<>(coinRaiseMap.keySet());
+    marketList.sort((o1, o2) -> coinRaiseMap.get(o2).compareTo(coinRaiseMap.get(o1)));
+
     return marketList;
   }
 

@@ -56,29 +56,20 @@ public class AskTrader {
 
       OrderHistory bidOrderHistory = orderService.getLastOrder(account.getCurrency(),
           OrderSide.BID.getValue(), OrderType.BEST.getValue());
-
       if (bidOrderHistory == null) {
         continue;
       }
 
-      LocalDateTime limitAskOrderTime = bidOrderHistory.getOrderTime();
-      Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
-
-      String candleUnit = commonService.getConfig("BID", "candle_unit").trim();
-      List<Candle> minuteCandleList = QuotationRequestManager.getMinuteCandleList(
-          currentPrice.getMarket(), "200",
-          candleUnit);
-      if (minuteCandleList == null || minuteCandleList.isEmpty()) {
+      List<Candle> bitCoinCandleList = QuotationRequestManager.getDayCandleList(
+          currentPrice.getMarket(), "120");
+      if (bitCoinCandleList == null || bitCoinCandleList.isEmpty()) {
         continue;
       }
-      double rsi = chartResearchService.getRsiByMinutes(minuteCandleList, 14);
-      Integer bollingerBandPeriod = Integer.parseInt(
-          commonService.getConfig("BOLLINGER", "period").trim());
-      List<Double> bollingerBandValue = chartResearchService.getBollingerBandByMinutes(
-          minuteCandleList,
-          bollingerBandPeriod, 2);
-      boolean isTopBollingerBandValue =
-          bollingerBandValue.get(0) <= minuteCandleList.get(0).getHighPrice();
+      boolean isPositiveMoving = chartResearchService.isPositiveMovingAverage(bitCoinCandleList,
+          bitCoinCandleList.size());
+
+      Double currentBidPrice = currentPrice.getOrderbookUnits().get(0).getBidPrice();
+      LocalDateTime limitAskOrderTime = bidOrderHistory.getOrderTime();
 
       if (avgBuyPrice * askProfitRateValue < currentBidPrice) {
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
@@ -101,13 +92,13 @@ public class AskTrader {
           );
 
         }
-      } else if (rsi >= 70 || (avgBuyPrice * 1.002 < currentBidPrice && isTopBollingerBandValue)) {
+      } else if (!isPositiveMoving) {
         double purchaseCoinKrw = accountService.getPurchaseCoinKrw(account.getCurrency());
         Order order = orderService.askMarketCoin(account.getCurrency(),
             Double.parseDouble(account.getBalance()) > 0d ? account.getBalance()
                 : account.getLocked());
         if (order.isSuccess()) {
-          log.info("[차트매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 차액 : {}, RSI : {}, 상단 볼린저밴드 값 : {}",
+          log.info("[차트매도] 코인명 : {}, 구매금액 : {}, 정산금액 : {}, 차액 : {}",
               order.getMarket().replace("KRW-", ""),
               String.format("%,.2f", purchaseCoinKrw),
               String.format("%,.2f",
@@ -117,9 +108,7 @@ public class AskTrader {
               String.format("%,.2f",
                   (currentBidPrice * (Double.parseDouble(account.getBalance()) > 0d
                       ? Double.parseDouble(account.getBalance())
-                      : Double.parseDouble(account.getLocked())) / 0.9995d) - purchaseCoinKrw),
-              rsi,
-              bollingerBandValue.get(0)
+                      : Double.parseDouble(account.getLocked())) / 0.9995d) - purchaseCoinKrw)
           );
 
         }

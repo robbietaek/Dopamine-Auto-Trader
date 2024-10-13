@@ -7,7 +7,9 @@ import com.dopamine.trade.dao.OrderDao;
 import com.dopamine.trade.service.AccountService;
 import com.dopamine.trade.service.OrderService;
 import com.dopamine.trade.service.QuotationService;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +26,8 @@ public class BidTrader {
   private final CommonService commonService;
   private final OrderDao orderDao;
 
+  public static Queue<Double> percentBValue = new LinkedList<>();
+
   @Scheduled(fixedDelay = 3383)
   public void bidTrader() {
     List<Accounts> coinAccountList = accountService.getCoinAccountList();
@@ -35,37 +39,38 @@ public class BidTrader {
 
     int coinOwnCount = coinAccountList.size();
     int coinOwnLimit = Integer.parseInt(commonService.getConfig("BID", "coin_own_limit"));
-    if (coinOwnCount < coinOwnLimit) {
-
-      double krw = accountService.getKRWStatus();
-      if (krw <= 5000d) {
-        return;
-      }
-
-      List<String> askCoinList = quotationService.getBidCoinList(krw, coinAccountList,
-          coinOwnLimit - coinOwnCount);
-      if (askCoinList.isEmpty()) {
-        return;
-      }
-
-      for (String market : askCoinList) {
-        Order order = orderService.bidFokCoin(market,
-            krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
-        double afterKrw = accountService.getKRWStatus();
-        if (order.isSuccess() && krw != afterKrw) {
-          orderDao.insertBidOrderInformation(order);
-          coinOwnCount++;
-          krw = accountService.getKRWStatus();
-          log.info("[매수주문] 코인명 : {}",
-              market.replace("KRW-", ""));
-        }
-
-        if (coinOwnCount == coinOwnLimit) {
-          break;
-        }
-
-      }
+    if (coinOwnCount >= coinOwnLimit) {
+      return;
     }
+
+    double krw = accountService.getKRWStatus();
+    if (krw <= 5000d) {
+      return;
+    }
+
+    List<String> askCoinList = quotationService.getBidCoinList(krw, coinAccountList);
+    if (askCoinList.isEmpty()) {
+      return;
+    }
+
+    for (String market : askCoinList) {
+      Order order = orderService.bidFokCoin(market,
+          krw * 0.999d * ((100d / (coinOwnLimit - coinOwnCount)) / 100d));
+      double afterKrw = accountService.getKRWStatus();
+      if (order.isSuccess() && krw != afterKrw) {
+        orderDao.insertBidOrderInformation(order);
+        coinOwnCount++;
+        krw = accountService.getKRWStatus();
+        log.info("[매수주문] 코인명 : {}",
+            market.replace("KRW-", ""));
+      }
+
+      if (coinOwnCount == coinOwnLimit) {
+        break;
+      }
+
+    }
+
   }
 
 }
